@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:potato_apps/pages/home/main_page.dart';
+import 'package:potato_apps/pages/sign_in_page.dart';
+import 'package:potato_apps/pages/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -6,31 +9,15 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const HomePage(),
+      debugShowCheckedModeBanner: false,
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/sign-in': (context) => const SignInPage(),
+        '/home': (context) => const MainPage(),
+      },
     );
-  }
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
