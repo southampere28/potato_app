@@ -17,6 +17,7 @@ Color backgroundColor5 = Color(0xff2B2844);
 Color backgroundColor6 = Color(0xffECEDEF);
 Color primaryTextColor = Color(0xffF1F0F2);
 Color secondaryTextColor = Color(0xff999999);
+Color thirdTextColor = Color(0xff949494);
 Color subtitleColor = Color(0xff504F5E);
 Color transparentColor = Colors.transparent;
 Color blackColor = Color(0xff2E2E2E);
@@ -25,12 +26,20 @@ TextStyle primaryTextStyle = GoogleFonts.poppins(
   color: primaryTextColor,
 );
 
+TextStyle primaryGreenTextStyle = GoogleFonts.poppins(
+  color: primaryColor,
+);
+
 TextStyle secondaryTextStyle = GoogleFonts.poppins(
   color: secondaryTextColor,
 );
 
 TextStyle subtitleTextStyle = GoogleFonts.poppins(
   color: thirdColor,
+);
+
+TextStyle subtitleTextStyle2 = GoogleFonts.poppins(
+  color: thirdTextColor,
 );
 
 TextStyle whiteTextStyle = GoogleFonts.poppins(
