@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:potato_apps/app_constant/controller.dart';
 import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/login_button.dart';
+
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:potato_apps/app_constant/controller.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -13,74 +19,77 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: primaryColor,
-      body: Container(
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Stack(children: [
-              ClipPath(
-                clipper: SlightCurveClipper(),
-                child: Container(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: primaryColor,
+        body: Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Stack(children: [
+                ClipPath(
+                  clipper: SlightCurveClipper(),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    decoration: BoxDecoration(color: Colors.white),
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
                   height: MediaQuery.of(context).size.height * 0.6,
-                  decoration: BoxDecoration(color: Colors.white),
-                ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        'Potato Base',
+                        style: primaryGreenTextStyle.copyWith(
+                            fontSize: 24, fontWeight: medium),
+                      ),
+                      Spacer(),
+                      Container(
+                        height: 220,
+                        decoration: const BoxDecoration(
+                            image: DecorationImage(
+                          image: AssetImage('assets/app_logo.png'),
+                        )),
+                      ),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      Text(
+                        'Welcome Back,',
+                        style: primaryGreenTextStyle.copyWith(
+                            fontSize: 24, fontWeight: medium),
+                      ),
+                      Text(
+                        'Login or Register now for continue!',
+                        style: subtitleTextStyle2.copyWith(
+                            fontSize: 14, fontWeight: medium),
+                      ),
+                      const SizedBox(
+                        height: 42,
+                      )
+                    ],
+                  ),
+                )
+              ]),
+              const Spacer(),
+              LoginButton(
+                  buttonName: 'Login With Google',
+                  routeFunction: () async {
+                    // Fluttertoast.showToast(msg: 'Login Mahasiswa Clicked');
+                    await PersonController.googleAuthLogin(context);
+                  }),
+              const SizedBox(
+                height: 50,
               ),
-              Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      'Potato Base',
-                      style: titleTextStyle.copyWith(
-                          fontSize: 24, fontWeight: medium),
-                    ),
-                    Spacer(),
-                    Container(
-                      height: 220,
-                      decoration: const BoxDecoration(
-                          image: DecorationImage(
-                        image: AssetImage('assets/app_logo.png'),
-                      )),
-                    ),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    Text(
-                      'Welcome Back,',
-                      style: titleTextStyle.copyWith(
-                          fontSize: 24, fontWeight: medium),
-                    ),
-                    Text(
-                      'Login or Register now for continue!',
-                      style: subtitleTextStyle.copyWith(
-                          fontSize: 14, fontWeight: medium),
-                    ),
-                    const SizedBox(
-                      height: 42,
-                    )
-                  ],
-                ),
-              )
-            ]),
-            const Spacer(),
-            LoginButton(
-                buttonName: 'Login With Google',
-                routeFunction: () {
-                  Fluttertoast.showToast(msg: 'Login Mahasiswa Clicked');
-                }),
-            const SizedBox(
-              height: 50,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
