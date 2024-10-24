@@ -31,7 +31,10 @@ class _HomePageState extends State<HomePage> {
               ),
               Text(
                 'Ilham Islamy',
-                style: whiteTextStyle.copyWith(fontSize: 24, fontWeight: bold),
+                style: whiteTextStyle.copyWith(
+                    fontSize: 24,
+                    fontWeight: bold,
+                    overflow: TextOverflow.ellipsis),
               ),
               Text(
                 '30 Oktober, 2024',
@@ -51,6 +54,74 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget panelControl() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(left: 16, right: 16, top: 24),
+      width: double.infinity,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20), color: primaryColor),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Panel Controlling',
+            style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
+          ),
+          const SizedBox(
+            height: 12,
+          ),
+          Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: Container(
+                  height: 120,
+                  decoration: BoxDecoration(
+                      color: thirdColor,
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Center(
+                      child: Text(
+                    'Blower Control',
+                    style: blackTextStyle.copyWith(fontWeight: bold),
+                  )),
+                ),
+              ),
+              SizedBox(
+                width: 12,
+              ),
+              Expanded(
+                flex: 6,
+                child: Container(
+                    padding: const EdgeInsets.all(12),
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: fifthColor,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mode Auto',
+                          style: blackTextStyle.copyWith(
+                              fontWeight: medium, fontSize: 18),
+                        ),
+                        Text(
+                          'OFF',
+                          style: blackTextStyle.copyWith(
+                              fontWeight: bold, fontSize: 18),
+                        ),
+                      ],
+                    )),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -58,7 +129,7 @@ class _HomePageState extends State<HomePage> {
         scrollDirection: Axis.vertical,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [header()],
+          children: [header(), panelControl()],
         ),
       ),
     );
