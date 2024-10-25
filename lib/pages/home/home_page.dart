@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:potato_apps/theme.dart';
+import 'package:potato_apps/widget/header_home.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,50 +10,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Widget header() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20)),
-          color: primaryColor),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Selamat Datang',
-                style: whiteTextStyle,
-              ),
-              Text(
-                'Ilham Islamy',
-                style: whiteTextStyle.copyWith(
-                    fontSize: 24,
-                    fontWeight: bold,
-                    overflow: TextOverflow.ellipsis),
-              ),
-              Text(
-                '30 Oktober, 2024',
-                style: whiteTextStyle,
-              ),
-            ],
-          )),
-          ClipOval(
-              child: Image.asset(
-            'assets/img_sample.jpeg',
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-          ))
-        ],
-      ),
-    );
-  }
+  // thumbicon for blower controller
+  final MaterialStateProperty<Icon?> thumbIcon =
+      MaterialStateProperty.resolveWith<Icon?>(
+    (Set<MaterialState> states) {
+      if (states.contains(MaterialState.selected)) {
+        return const Icon(Icons.check);
+      }
+      return const Icon(Icons.close);
+    },
+  );
 
   Widget panelControl() {
     return Container(
@@ -76,15 +43,22 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 flex: 4,
                 child: Container(
-                  height: 120,
+                  padding: const EdgeInsets.all(12),
+                  height: 128,
                   decoration: BoxDecoration(
-                      color: thirdColor,
+                      color: fifthColor,
                       borderRadius: BorderRadius.circular(16)),
-                  child: Center(
-                      child: Text(
-                    'Blower Control',
-                    style: blackTextStyle.copyWith(fontWeight: bold),
-                  )),
+                  child: BlowerCard(
+                    thumbIcon: thumbIcon,
+                    blowerIndicator: blowerIndicator,
+                    blowerValue: blowervalue,
+                    onToggle: (bool value) {
+                      setState(() {
+                        blowervalue = value;
+                        blowerIndicator = value ? "ON" : "OFF";
+                      });
+                    },
+                  ),
                 ),
               ),
               SizedBox(
@@ -94,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                 flex: 6,
                 child: Container(
                     padding: const EdgeInsets.all(12),
-                    height: 120,
+                    height: 128,
                     decoration: BoxDecoration(
                       color: fifthColor,
                       borderRadius: BorderRadius.circular(16),
@@ -108,10 +82,21 @@ class _HomePageState extends State<HomePage> {
                               fontWeight: medium, fontSize: 18),
                         ),
                         Text(
-                          'OFF',
+                          automateIndicator,
                           style: blackTextStyle.copyWith(
                               fontWeight: bold, fontSize: 18),
                         ),
+                        Spacer(),
+                        Switch(
+                          thumbIcon: thumbIcon,
+                          value: automateValue,
+                          onChanged: (bool value) {
+                            setState(() {
+                              automateValue = value;
+                              automateIndicator = value ? "ON" : "OFF";
+                            });
+                          },
+                        )
                       ],
                     )),
               )
@@ -122,6 +107,84 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget lightIntensityMonitor() {
+    return Container(
+      margin: const EdgeInsets.only(top: 18, left: 16, right: 16),
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'light intensity',
+            style: blackTextStyle.copyWith(fontSize: 12, fontWeight: medium),
+          ),
+          const SizedBox(
+            height: 4,
+          ),
+          Container(
+            width: double.infinity,
+            height: 50,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12), color: primaryColor),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget temperatureHumidity() {
+    return Container(
+      margin: const EdgeInsets.only(left: 16, right: 16, top: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+              flex: 5,
+              child: Container(
+                width: double.infinity,
+                height: 158,
+                decoration: BoxDecoration(
+                    color: backgroundColor4,
+                    borderRadius: BorderRadius.circular(20)),
+              )),
+          SizedBox(
+            width: 12,
+          ),
+          Expanded(
+              flex: 5,
+              child: Container(
+                width: double.infinity,
+                height: 158,
+                decoration: BoxDecoration(
+                    color: backgroundColor4,
+                    borderRadius: BorderRadius.circular(20)),
+              )),
+        ],
+      ),
+    );
+  }
+
+  // blower controller variable
+  late bool blowervalue;
+  late String blowerIndicator;
+
+  late bool automateValue;
+  late String automateIndicator;
+
+  // init state
+  @override
+  void initState() {
+    super.initState();
+
+    // blower initialize
+    blowervalue = false;
+    blowerIndicator = blowervalue ? "ON" : "OFF";
+
+    // automation initialize
+    automateValue = false;
+    automateIndicator = automateValue ? "ON" : "OFF";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -129,9 +192,69 @@ class _HomePageState extends State<HomePage> {
         scrollDirection: Axis.vertical,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [header(), panelControl()],
+          children: [
+            const HeaderHomeWidget(),
+            panelControl(),
+            lightIntensityMonitor(),
+            temperatureHumidity()
+          ],
         ),
       ),
+    );
+  }
+}
+
+class BlowerCard extends StatefulWidget {
+  BlowerCard({
+    super.key,
+    required this.thumbIcon,
+    required this.blowerValue,
+    required this.blowerIndicator,
+    required this.onToggle,
+  });
+
+  final MaterialStateProperty<Icon?> thumbIcon;
+  final String blowerIndicator;
+  final bool blowerValue;
+  final ValueChanged<bool> onToggle;
+
+  @override
+  State<BlowerCard> createState() => _BlowerCardState();
+}
+
+class _BlowerCardState extends State<BlowerCard> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          Image.asset(
+            'assets/icon_fan.png',
+            height: 36,
+          ),
+          const Spacer(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('Blower',
+                  style: blackTextStyle.copyWith(
+                    fontSize: 18,
+                    fontWeight: medium,
+                  ),
+                  overflow: TextOverflow.ellipsis),
+              Text(widget.blowerIndicator,
+                  style: blackTextStyle.copyWith(
+                      fontSize: 18, fontWeight: medium)),
+            ],
+          )
+        ]),
+        Spacer(),
+        Switch(
+            thumbIcon: widget.thumbIcon,
+            value: widget.blowerValue,
+            onChanged: widget.onToggle),
+      ],
     );
   }
 }

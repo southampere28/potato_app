@@ -7,6 +7,7 @@ Color primaryColor = Color(0xff389875);
 Color secondaryColor = Color.fromARGB(255, 46, 195, 140);
 Color thirdColor = Color.fromARGB(255, 106, 244, 193);
 Color fourthColor = Color(0xff018DCD);
+Color fifthColor = Color(0xffECECEC);
 Color alertColor = Color(0xffED6363);
 Color priceColor = Color(0xff2C96F1);
 Color backgroundColor1 = Color(0xff1F1D2B);
