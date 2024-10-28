@@ -12,6 +12,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: 6.1.0
   fluttertoast: ^8.2.4
+  syncfusion_flutter_charts: ^20.3.61
+  toggle_switch: ^2.3.0
+  image_picker: ^0.8.4+2
 
 dev_dependencies:
   flutter_test:
