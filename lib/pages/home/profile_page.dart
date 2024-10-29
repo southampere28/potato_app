@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:potato_apps/configuration/controller.dart';
+import 'package:potato_apps/widget/button_green.dart';
+import 'package:potato_apps/widget/button_logout.dart';
 import 'package:potato_apps/widget/formfield_profile.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -145,6 +147,24 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(
             height: 16,
           ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ButtonLogout(
+                    title: 'Logout',
+                    ontap: () {
+                      PersonController.signOutUser(context);
+                    }),
+                ButtonGreen(
+                    title: 'Save',
+                    ontap: () {
+                      Fluttertoast.showToast(msg: 'Profile Saved!');
+                    }),
+              ],
+            ),
+          )
         ],
       ),
     );
