@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:potato_apps/configuration/controller.dart';
 import 'package:potato_apps/theme.dart';
+import 'package:potato_apps/widget/button_green.dart';
 import 'package:potato_apps/widget/header_home.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_charts/sparkcharts.dart';
+import 'package:stroke_text/stroke_text.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,6 +26,16 @@ class _HomePageState extends State<HomePage> {
       return const Icon(Icons.close);
     },
   );
+
+  // light intensity variable
+  late int _lightIntensity;
+
+  // blower controller variable
+  late bool blowervalue;
+  late String blowerIndicator;
+
+  late bool automateValue;
+  late String automateIndicator;
 
   Widget panelControl() {
     return Container(
@@ -112,27 +125,54 @@ class _HomePageState extends State<HomePage> {
 
   Widget lightIntensityMonitor() {
     return Container(
-      margin: const EdgeInsets.only(top: 18, left: 16, right: 16),
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'light intensity',
-            style: blackTextStyle.copyWith(fontSize: 12, fontWeight: medium),
-          ),
-          const SizedBox(
-            height: 4,
-          ),
-          Container(
-            width: double.infinity,
-            height: 50,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12), color: primaryColor),
-          )
-        ],
-      ),
-    );
+        margin: const EdgeInsets.only(top: 18, left: 16, right: 16),
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              child: Text(
+                'light intensity',
+                style: blackTextStyle.copyWith(fontSize: 14, fontWeight: bold),
+              ),
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+            Stack(alignment: Alignment.centerLeft, children: [
+              LinearProgressIndicator(
+                value: _lightIntensity / 100, // Convert to a 0-1 range
+                backgroundColor: Colors.grey[300],
+                color: primaryColor,
+                minHeight: 60,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              Container(
+                padding: const EdgeInsets.only(left: 40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    StrokeText(
+                      text: '1000',
+                      textStyle: whiteTextStyle.copyWith(
+                          fontSize: 20, fontWeight: bold),
+                      strokeColor: primaryColor,
+                      strokeWidth: 2,
+                    ),
+                    StrokeText(
+                      text: 'lux',
+                      textStyle: whiteTextStyle.copyWith(
+                          fontSize: 14, fontWeight: bold),
+                      strokeColor: primaryColor,
+                      strokeWidth: 2,
+                    ),
+                  ],
+                ),
+              )
+            ]),
+          ],
+        ));
   }
 
   Widget temperatureHumidity() {
@@ -178,7 +218,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 12,
           ),
           Expanded(
@@ -245,40 +285,27 @@ class _HomePageState extends State<HomePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          margin: const EdgeInsets.only(top: 30, bottom: 30),
-          height: 36,
-          width: 100,
-          child: TextButton(
-              onPressed: () {
-                Fluttertoast.showToast(msg: 'Button Save Clicked');
-              },
-              style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  backgroundColor: primaryColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8))),
-              child: Text(
-                'save',
-                style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
-              )),
-        ),
+        ButtonGreen(
+            title: 'Save',
+            ontap: () async {
+              Map<String, dynamic>? userdata =
+                  await PersonController.getUserData() ?? {};
+
+              Fluttertoast.showToast(msg: 'Button Save Clicked');
+
+              Fluttertoast.showToast(msg: userdata.toString());
+            })
       ],
     );
   }
-
-  // blower controller variable
-  late bool blowervalue;
-  late String blowerIndicator;
-
-  late bool automateValue;
-  late String automateIndicator;
 
   // init state
   @override
   void initState() {
     super.initState();
+
+    // light intensity initialize
+    _lightIntensity = 20;
 
     // blower initialize
     blowervalue = false;
