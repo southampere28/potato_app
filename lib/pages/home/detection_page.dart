@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:potato_apps/theme.dart';
+import 'package:potato_apps/widget/button_green.dart';
+import 'package:potato_apps/widget/button_outline_green.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -212,47 +214,19 @@ class _DetectionPageState extends State<DetectionPage> {
   }
 
   Widget buttonGreen() {
-    return Container(
-      width: 100,
-      height: 36,
-      child: TextButton(
-          onPressed: () {
-            Fluttertoast.showToast(msg: 'Button Analyze Clicked');
-          },
-          style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              backgroundColor: primaryColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8))),
-          child: Text(
-            'Analyze',
-            style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
-          )),
-    );
+    return ButtonGreen(
+        title: 'Analyze',
+        ontap: () {
+          Fluttertoast.showToast(msg: 'Button Analyze Clicked');
+        });
   }
 
   Widget buttonOutlineGreen() {
-    return Container(
-      width: 100,
-      height: 36,
-      child: TextButton(
-          onPressed: () {
-            Fluttertoast.showToast(msg: 'Button History Clicked');
-          },
-          style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(color: primaryColor, width: 2))),
-          child: Text(
-            'History',
-            style:
-                primaryGreenTextStyle.copyWith(fontSize: 18, fontWeight: bold),
-          )),
-    );
+    return ButtonOutlineGreen(
+        title: 'History',
+        ontap: () {
+          Fluttertoast.showToast(msg: 'Button History Clicked');
+        });
   }
 
   void initState() {
