@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:potato_apps/configuration/controller.dart';
@@ -30,12 +32,21 @@ class _HomePageState extends State<HomePage> {
   // light intensity variable
   late int _lightIntensity;
 
+  // temperature varable
+  late String _temperature;
+
   // blower controller variable
   late bool blowervalue;
   late String blowerIndicator;
 
   late bool automateValue;
   late String automateIndicator;
+
+  // Data kelembaban dengan 50% sebagai contoh
+  double valueHumidity = 0;
+  late List<ChartData> chartData;
+
+  Timer? _timer; // Timer variable
 
   Widget panelControl() {
     return Container(
@@ -95,12 +106,12 @@ class _HomePageState extends State<HomePage> {
                         Text(
                           'Mode Auto',
                           style: blackTextStyle.copyWith(
-                              fontWeight: medium, fontSize: 18),
+                              fontWeight: medium, fontSize: 16),
                         ),
                         Text(
                           automateIndicator,
                           style: blackTextStyle.copyWith(
-                              fontWeight: bold, fontSize: 18),
+                              fontWeight: bold, fontSize: 16),
                         ),
                         Spacer(),
                         Switch(
@@ -142,7 +153,7 @@ class _HomePageState extends State<HomePage> {
             ),
             Stack(alignment: Alignment.centerLeft, children: [
               LinearProgressIndicator(
-                value: _lightIntensity / 100, // Convert to a 0-1 range
+                value: _lightIntensity / 1000, // Convert to a 0-1 range
                 backgroundColor: Colors.grey[300],
                 color: primaryColor,
                 minHeight: 60,
@@ -154,7 +165,7 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     StrokeText(
-                      text: '1000',
+                      text: '${_lightIntensity}',
                       textStyle: whiteTextStyle.copyWith(
                           fontSize: 20, fontWeight: bold),
                       strokeColor: primaryColor,
@@ -208,7 +219,7 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: Center(
                       child: Text(
-                        '25\u00B0',
+                        '${_temperature}\u00B0',
                         style: primaryGreenTextStyle.copyWith(
                             fontSize: 60, fontWeight: bold),
                       ),
@@ -288,15 +299,39 @@ class _HomePageState extends State<HomePage> {
         ButtonGreen(
             title: 'Save',
             ontap: () async {
-              Map<String, dynamic>? userdata =
-                  await PersonController.getUserData() ?? {};
+              // Map<String, dynamic>? userdata =
+              //     await PersonController.getUserData() ?? {};
 
-              Fluttertoast.showToast(msg: 'Button Save Clicked');
-
-              Fluttertoast.showToast(msg: userdata.toString());
+              // Fluttertoast.showToast(msg: 'Button Save Clicked');
             })
       ],
     );
+  }
+
+  Future<void> _fetchDeviceData() async {
+    Map<String, dynamic>? deviceData =
+        await DeviceController.getDeviceData('1730184375');
+
+    if (deviceData != null) {
+      setState(() {
+        valueHumidity = double.parse(
+            deviceData['humidity']?.toString() ?? '0'); // Fetch humidity
+        _temperature =
+            deviceData['temperature']?.toString() ?? 'N/A'; // Fetch temperature
+        _lightIntensity = int.parse(deviceData['light_intensity']?.toString() ??
+            '0'); // Fetch light intensity
+
+        chartData = [ChartData('Humidity', valueHumidity)];
+      });
+    } else {
+      setState(() {
+        valueHumidity = 0;
+        _temperature = '0';
+        _lightIntensity = 0;
+
+        chartData = [ChartData('Humidity', 0)];
+      });
+    }
   }
 
   // init state
@@ -304,8 +339,15 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
+    // Set the timer to fetch data every second
+    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
+      _fetchDeviceData();
+    });
+
     // light intensity initialize
     _lightIntensity = 20;
+
+    _temperature = "0";
 
     // blower initialize
     blowervalue = false;
@@ -315,15 +357,16 @@ class _HomePageState extends State<HomePage> {
     automateValue = false;
     automateIndicator = automateValue ? "ON" : "OFF";
 
-    valueHumidity = 80;
     chartData = [
       ChartData('Humidity', valueHumidity), // 50% humidity
     ];
   }
 
-  // Data kelembaban dengan 50% sebagai contoh
-  late double valueHumidity;
-  late List<ChartData> chartData;
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when disposing
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -374,20 +417,24 @@ class _BlowerCardState extends State<BlowerCard> {
             'assets/icon_fan.png',
             height: 36,
           ),
-          const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('Blower',
-                  style: blackTextStyle.copyWith(
-                    fontSize: 18,
-                    fontWeight: medium,
-                  ),
-                  overflow: TextOverflow.ellipsis),
-              Text(widget.blowerIndicator,
-                  style: blackTextStyle.copyWith(
-                      fontSize: 18, fontWeight: medium)),
-            ],
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.only(left: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('Blower',
+                      style: blackTextStyle.copyWith(
+                        fontSize: 14,
+                        fontWeight: medium,
+                      ),
+                      overflow: TextOverflow.ellipsis),
+                  Text(widget.blowerIndicator,
+                      style: blackTextStyle.copyWith(
+                          fontSize: 14, fontWeight: medium)),
+                ],
+              ),
+            ),
           )
         ]),
         Spacer(),
