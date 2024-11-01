@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class PersonController {
   static final googleSignIn = GoogleSignIn();
@@ -124,7 +126,6 @@ class PersonController {
 
   // get profile user
   static Future<Map<String, dynamic>?> getUserData() async {
-    
     final User? currentUser = FirebaseAuth.instance.currentUser;
     final uid = currentUser?.uid;
 
@@ -145,6 +146,34 @@ class PersonController {
       }
     } catch (e) {
       print("Error fetching user data: $e");
+      return null;
+    }
+  }
+}
+
+class DeviceController {
+  static final DatabaseReference _database = FirebaseDatabase.instanceFor(
+    app: Firebase.app(),
+    databaseURL:
+        "https://potato-base-34d80-default-rtdb.asia-southeast1.firebasedatabase.app",
+  ).ref();
+
+  // Function to get device data by device ID
+  static Future<Map<String, dynamic>?> getDeviceData(String deviceId) async {
+    try {
+      // Retrieve data from the specific device node
+      DatabaseEvent event = await _database.child('device/$deviceId').once();
+
+      // Check if the data exists
+      if (event.snapshot.value != null) {
+        // Return the data as a Map
+        return Map<String, dynamic>.from(event.snapshot.value as Map);
+      } else {
+        print("No data found for device ID: $deviceId");
+        return null;
+      }
+    } catch (e) {
+      print("Error getting device data: $e");
       return null;
     }
   }
