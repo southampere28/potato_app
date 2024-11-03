@@ -14,8 +14,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await signInAnonymously();
-  await getDataFromFirestore();
+  // await signInAnonymously();
+  // await getDataFromFirestore();
 }
 
 Future<void> signInAnonymously() async {

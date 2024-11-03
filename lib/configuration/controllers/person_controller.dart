@@ -6,13 +6,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:potato_apps/model/user_model.dart';
 
 class PersonController {
   static final googleSignIn = GoogleSignIn();
-
-  static String nameCurrentUser = "";
-
-  static String emailCurrentUser = "";
 
   static Future<void> googleAuthLogin(BuildContext context) async {
     try {
@@ -50,6 +47,7 @@ class PersonController {
           "fullname": currentUser?.displayName ?? currentUser?.email,
           "email": currentUser?.email ?? '',
           "city": "",
+          "profile_photo" : currentUser?.photoURL ?? "",
           "work": "",
           "createdAt": Timestamp.now(),
         };
@@ -125,9 +123,14 @@ class PersonController {
   }
 
   // get profile user
-  static Future<Map<String, dynamic>?> getUserData() async {
+  static Future<UserModel?> getUserData() async {
     final User? currentUser = FirebaseAuth.instance.currentUser;
     final uid = currentUser?.uid;
+
+    if (uid == null) {
+      print("No user is currently logged in.");
+      return null;
+    }
 
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -139,41 +142,13 @@ class PersonController {
       // Check if document exists
       if (userDoc.exists) {
         // Return the user data as a Map
-        return userDoc.data() as Map<String, dynamic>?;
+        return UserModel.fromFirestore(userDoc);
       } else {
         print("User with UID $uid does not exist.");
         return null;
       }
     } catch (e) {
       print("Error fetching user data: $e");
-      return null;
-    }
-  }
-}
-
-class DeviceController {
-  static final DatabaseReference _database = FirebaseDatabase.instanceFor(
-    app: Firebase.app(),
-    databaseURL:
-        "https://potato-base-34d80-default-rtdb.asia-southeast1.firebasedatabase.app",
-  ).ref();
-
-  // Function to get device data by device ID
-  static Future<Map<String, dynamic>?> getDeviceData(String deviceId) async {
-    try {
-      // Retrieve data from the specific device node
-      DatabaseEvent event = await _database.child('device/$deviceId').once();
-
-      // Check if the data exists
-      if (event.snapshot.value != null) {
-        // Return the data as a Map
-        return Map<String, dynamic>.from(event.snapshot.value as Map);
-      } else {
-        print("No data found for device ID: $deviceId");
-        return null;
-      }
-    } catch (e) {
-      print("Error getting device data: $e");
       return null;
     }
   }

@@ -16,6 +16,7 @@ dependencies:
   toggle_switch: ^2.3.0
   image_picker: ^0.8.4+2
   stroke_text: any
+  firebase_database: ^10.4.9
 
 dev_dependencies:
   flutter_test:

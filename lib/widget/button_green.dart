@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:potato_apps/configuration/controller.dart';
 import 'package:potato_apps/theme.dart';
 
 class ButtonGreen extends StatelessWidget {
