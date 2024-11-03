@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:potato_apps/configuration/controller.dart';
+import 'package:potato_apps/configuration/controllers/device_controller.dart';
+import 'package:potato_apps/configuration/controllers/person_controller.dart';
+import 'package:potato_apps/model/user_model.dart';
 import 'package:potato_apps/theme.dart';
+import 'package:potato_apps/widget/blower_card.dart';
 import 'package:potato_apps/widget/button_green.dart';
 import 'package:potato_apps/widget/header_home.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -299,8 +302,15 @@ class _HomePageState extends State<HomePage> {
         ButtonGreen(
             title: 'Save',
             ontap: () async {
-              // Map<String, dynamic>? userdata =
-              //     await PersonController.getUserData() ?? {};
+              UserModel? userdata = await PersonController.getUserData();
+
+              if (userdata != null) {
+                Fluttertoast.showToast(
+                    msg:
+                        'fullname : ${userdata.fullName}, city: ${userdata.city} email : ${userdata.email}');
+              } else {
+                Fluttertoast.showToast(msg: "no userdata found");
+              }
 
               // Fluttertoast.showToast(msg: 'Button Save Clicked');
             })
@@ -312,7 +322,7 @@ class _HomePageState extends State<HomePage> {
     Map<String, dynamic>? deviceData =
         await DeviceController.getDeviceData('1730184375');
 
-    if (deviceData != null) {
+    if (mounted && deviceData != null) {
       setState(() {
         valueHumidity = double.parse(
             deviceData['humidity']?.toString() ?? '0'); // Fetch humidity
@@ -323,15 +333,8 @@ class _HomePageState extends State<HomePage> {
 
         chartData = [ChartData('Humidity', valueHumidity)];
       });
-    } else {
-      setState(() {
-        valueHumidity = 0;
-        _temperature = '0';
-        _lightIntensity = 0;
-
-        chartData = [ChartData('Humidity', 0)];
-      });
     }
+    
   }
 
   // init state
@@ -384,65 +387,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class BlowerCard extends StatefulWidget {
-  BlowerCard({
-    super.key,
-    required this.thumbIcon,
-    required this.blowerValue,
-    required this.blowerIndicator,
-    required this.onToggle,
-  });
-
-  final MaterialStateProperty<Icon?> thumbIcon;
-  final String blowerIndicator;
-  final bool blowerValue;
-  final ValueChanged<bool> onToggle;
-
-  @override
-  State<BlowerCard> createState() => _BlowerCardState();
-}
-
-class _BlowerCardState extends State<BlowerCard> {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Image.asset(
-            'assets/icon_fan.png',
-            height: 36,
-          ),
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.only(left: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('Blower',
-                      style: blackTextStyle.copyWith(
-                        fontSize: 14,
-                        fontWeight: medium,
-                      ),
-                      overflow: TextOverflow.ellipsis),
-                  Text(widget.blowerIndicator,
-                      style: blackTextStyle.copyWith(
-                          fontSize: 14, fontWeight: medium)),
-                ],
-              ),
-            ),
-          )
-        ]),
-        Spacer(),
-        Switch(
-            thumbIcon: widget.thumbIcon,
-            value: widget.blowerValue,
-            onChanged: widget.onToggle),
-      ],
     );
   }
 }
