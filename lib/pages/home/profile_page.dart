@@ -6,10 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:potato_apps/configuration/controller.dart';
+import 'package:potato_apps/configuration/controllers/person_controller.dart';
+import 'package:potato_apps/model/user_model.dart';
 import 'package:potato_apps/widget/button_green.dart';
 import 'package:potato_apps/widget/button_logout.dart';
 import 'package:potato_apps/widget/formfield_profile.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -31,6 +37,12 @@ class _ProfilePageState extends State<ProfilePage> {
   // work controller
   TextEditingController _workController = TextEditingController();
 
+  // userdata
+  late UserModel? userdata;
+
+  // image URL
+  String imageURL = "";
+
   // fileImage
   File? _imageFile;
 
@@ -47,6 +59,28 @@ class _ProfilePageState extends State<ProfilePage> {
     } on PlatformException catch (e) {
       Fluttertoast.showToast(msg: 'failed pick image $e');
     }
+  }
+
+  Future<void> fetchUserData() async {
+    UserModel? userInfo = await getUserInfo();
+
+    if (mounted && userInfo != null) {
+      setState(() {
+        _nameController.text = userInfo.fullName;
+        _emailController.text = userInfo.email;
+        _cityController.text = userInfo.city;
+        _workController.text = userInfo.work;
+        imageURL = userInfo.profilePhoto;
+      });
+    }
+  }
+
+  // Stream<UserModel?> getUserInfo() {
+  //   return PersonController.getUserDataStream();
+  // }
+
+  Future<UserModel?> getUserInfo() {
+    return PersonController.getUserData();
   }
 
   Widget profileImage() {
@@ -67,11 +101,17 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   )
                 : ClipOval(
-                    child: Image.asset(
-                    'assets/icon_profile.png',
-                    height: 120,
-                    width: 120,
-                  )),
+                    child: imageURL == ''
+                        ? Image.asset(
+                            'assets/icon_profile.png',
+                            height: 120,
+                            width: 120,
+                          )
+                        : Image.network(
+                            imageURL,
+                            height: 120,
+                            width: 120,
+                          )),
             Positioned(
               right: -2,
               bottom: -2,
@@ -111,7 +151,7 @@ class _ProfilePageState extends State<ProfilePage> {
             controller: _nameController,
             icon: null,
             keyType: TextInputType.name,
-            hintxt: "John Doe",
+            hintxt: "",
             labelField: "Nama",
           ),
           const SizedBox(
@@ -121,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
             controller: _emailController,
             icon: null,
             keyType: TextInputType.emailAddress,
-            hintxt: "john.doe97@gmail.com",
+            hintxt: "",
             labelField: "Email",
           ),
           const SizedBox(
@@ -131,7 +171,7 @@ class _ProfilePageState extends State<ProfilePage> {
             controller: _cityController,
             icon: null,
             keyType: TextInputType.text,
-            hintxt: "Surabaya",
+            hintxt: "(kota asal belum diatur)",
             labelField: "Kota Asal",
           ),
           const SizedBox(
@@ -141,7 +181,7 @@ class _ProfilePageState extends State<ProfilePage> {
             controller: _workController,
             icon: null,
             keyType: TextInputType.text,
-            hintxt: "Petani Kentang",
+            hintxt: "(pekerjaan belum diatur)",
             labelField: "Pekerjaan",
           ),
           const SizedBox(
@@ -159,8 +199,23 @@ class _ProfilePageState extends State<ProfilePage> {
                     }),
                 ButtonGreen(
                     title: 'Save',
-                    ontap: () {
-                      Fluttertoast.showToast(msg: 'Profile Saved!');
+                    ontap: () async {
+                      String fullName = _nameController.text;
+                      String work = _workController.text;
+                      String city = _cityController.text;
+
+                      // Prepare updated data
+                      Map<String, dynamic> updatedData = {
+                        'fullname': fullName, // Get this from your input field
+                        'work': work,
+                        'city': city,
+                      };
+
+                      // Call the update method
+                      await PersonController.updateUserData(updatedData);
+
+                      Fluttertoast.showToast(
+                          msg: 'User data updated successfully');
                     }),
               ],
             ),
@@ -179,18 +234,45 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
           resizeToAvoidBottomInset: true,
           backgroundColor: Colors.white,
           body: Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [content()],
-              ),
-            ),
+            child: FutureBuilder<UserModel?>(
+                future: getUserInfo(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  } else if (snapshot.hasData && snapshot.data != null) {
+                    final userData = snapshot.data!;
+
+                    // Populate your controllers or variables here if needed
+                    _nameController.text = userData.fullName;
+                    _emailController.text = userData.email;
+                    _cityController.text = userData.city;
+                    _workController.text = userData.work;
+                    imageURL = userData.profilePhoto;
+
+                    return SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [content()],
+                      ),
+                    );
+                  } else {
+                    return const Center(child: Text("No data available"));
+                  }
+                }),
           )),
     );
   }

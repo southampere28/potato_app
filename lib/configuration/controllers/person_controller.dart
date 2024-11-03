@@ -47,7 +47,7 @@ class PersonController {
           "fullname": currentUser?.displayName ?? currentUser?.email,
           "email": currentUser?.email ?? '',
           "city": "",
-          "profile_photo" : currentUser?.photoURL ?? "",
+          "profile_photo": currentUser?.photoURL ?? "",
           "work": "",
           "createdAt": Timestamp.now(),
         };
@@ -152,4 +152,50 @@ class PersonController {
       return null;
     }
   }
+
+  // get profile user with stream
+  static Stream<UserModel?> getUserDataStream() {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    final uid = currentUser?.uid;
+
+    if (uid == null) {
+      print("No user is currently logged in.");
+      return Stream.value(null);
+    }
+
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+    // Listen to changes in the document and map them to UserModel
+    return _firestore.collection('users').doc(uid).snapshots().map((userDoc) {
+      if (userDoc.exists) {
+        // Convert document data to UserModel
+        return UserModel.fromFirestore(userDoc);
+      } else {
+        print("User with UID $uid does not exist.");
+        return null;
+      }
+    });
+  }
+
+  static Future<void> updateUserData(Map<String, dynamic> updatedData) async {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    final uid = currentUser?.uid;
+
+    if (uid == null) {
+      print("No user is currently logged in.");
+      return null;
+    }
+
+    try {
+      DocumentReference userDoc =
+          FirebaseFirestore.instance.collection('users').doc(uid);
+
+      // Update the document with the new data
+      await userDoc.update(updatedData);
+      print('User data updated successfully.');
+    } catch (e) {
+      print('Error updating user data: $e');
+    }
+  }
+  
 }
