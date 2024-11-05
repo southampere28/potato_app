@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:potato_apps/configuration/controllers/device_controller.dart';
+import 'package:potato_apps/model/device_model.dart';
 import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/button_green.dart';
 
@@ -25,7 +27,7 @@ AppBar headerGreen() {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  Widget monitoringGudang() {
+  Widget monitoringGudang(String deviceId) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -44,39 +46,61 @@ class _HistoryPageState extends State<HistoryPage> {
             borderRadius: BorderRadius.circular(20),
             color: primaryColor,
           ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              headingRowColor:
-                  MaterialStateColor.resolveWith((states) => primaryColor),
-              columnSpacing: 20,
-              columns: [
-                DataColumn(label: Text('No', style: whiteTextStyle)),
-                DataColumn(label: Text('Temp', style: whiteTextStyle)),
-                DataColumn(label: Text('Humid', style: whiteTextStyle)),
-                DataColumn(label: Text('Lux', style: whiteTextStyle)),
-                DataColumn(label: Text('Date', style: whiteTextStyle)),
-                DataColumn(label: Text('Time', style: whiteTextStyle)),
-              ],
-              rows: [
-                DataRow(cells: [
-                  DataCell(Text('1', style: whiteTextStyle)),
-                  DataCell(Text('28°C', style: whiteTextStyle)),
-                  DataCell(Text('65%', style: whiteTextStyle)),
-                  DataCell(Text('300 lx', style: whiteTextStyle)),
-                  DataCell(Text('2024-10-28', style: whiteTextStyle)),
-                  DataCell(Text('12:00', style: whiteTextStyle)),
-                ]),
-                DataRow(cells: [
-                  DataCell(Text('2', style: whiteTextStyle)),
-                  DataCell(Text('29°C', style: whiteTextStyle)),
-                  DataCell(Text('70%', style: whiteTextStyle)),
-                  DataCell(Text('320 lx', style: whiteTextStyle)),
-                  DataCell(Text('2024-10-28', style: whiteTextStyle)),
-                  DataCell(Text('12:30', style: whiteTextStyle)),
-                ]),
-              ],
-            ),
+          child: FutureBuilder<List<WarehouseHistory>>(
+            future: DeviceController.getWarehouseHistory(deviceId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No warehouse history found.'));
+              }
+
+              // Display the fetched warehouse history
+              final historyList = snapshot.data!;
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  headingRowColor:
+                      MaterialStateColor.resolveWith((states) => primaryColor),
+                  columnSpacing: 20,
+                  columns: [
+                    DataColumn(label: Text('No', style: whiteTextStyle)),
+                    DataColumn(label: Text('Temp', style: whiteTextStyle)),
+                    DataColumn(label: Text('Humid', style: whiteTextStyle)),
+                    DataColumn(label: Text('Lux', style: whiteTextStyle)),
+                    DataColumn(label: Text('Date', style: whiteTextStyle)),
+                    DataColumn(label: Text('Time', style: whiteTextStyle)),
+                  ],
+                  rows: List<DataRow>.generate(
+                    historyList.length,
+                    (index) {
+                      final history = historyList[index];
+                      return DataRow(cells: [
+                        DataCell(Text('${index + 1}', style: whiteTextStyle)),
+                        DataCell(Text('${history.temperature}°C',
+                            style: whiteTextStyle)),
+                        DataCell(Text('${history.humidity}%',
+                            style: whiteTextStyle)),
+                        DataCell(Text('${history.lightIntensity} lx',
+                            style: whiteTextStyle)),
+                        DataCell(Text(
+                            '${history.createdAt.toDate().toLocal().toString().split(' ')[0]}',
+                            style: whiteTextStyle)), // Date
+                        DataCell(Text(
+                            '${history.createdAt.toDate().toLocal().toString().split(' ')[1].split('.')[0]}',
+                            style: whiteTextStyle)), // Time
+                      ]);
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -163,7 +187,11 @@ class _HistoryPageState extends State<HistoryPage> {
       scrollDirection: Axis.vertical,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [headerGreen(), monitoringGudang(), deteksiKentang()],
+        children: [
+          headerGreen(),
+          monitoringGudang('1730184375'),
+          deteksiKentang()
+        ],
       ),
     ));
   }
