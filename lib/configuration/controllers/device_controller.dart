@@ -9,9 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/model/device_model.dart';
 
-
 class DeviceController {
-
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   static final DatabaseReference _database = FirebaseDatabase.instanceFor(
@@ -54,15 +52,44 @@ class DeviceController {
     });
   }
 
-  // Function to retrieve warehouse history for a specific device
-  static Future<List<WarehouseHistory>> getWarehouseHistory(String deviceId) async {
+  static Future<bool> addNewWarehouseHistory(String deviceId, int humidity,
+      int lightIntensity, int temperature) async {
     try {
-      QuerySnapshot querySnapshot = await _firestore.collection('device').doc(deviceId).collection('warehouse_history').get();
-      return querySnapshot.docs.map((doc) => WarehouseHistory.fromMap(doc.data() as Map<String, dynamic>)).toList();
+      // Create a new document with the given parameters and current timestamp
+      await _firestore
+          .collection('device')
+          .doc(deviceId)
+          .collection('warehouse_history')
+          .add({
+        'created_at': FieldValue.serverTimestamp(),
+        'humidity': humidity,
+        'light_intensity': lightIntensity,
+        'temperature': temperature,
+      });
+      print("Warehouse history added successfully.");
+      return true;
+    } catch (e) {
+      print("Error adding new warehouse history: $e");
+      return false;
+    }
+  }
+
+  // Function to retrieve warehouse history for a specific device
+  static Future<List<WarehouseHistory>> getWarehouseHistory(
+      String deviceId) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('device')
+          .doc(deviceId)
+          .collection('warehouse_history')
+          .get();
+      return querySnapshot.docs
+          .map((doc) =>
+              WarehouseHistory.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       print('Error retrieving warehouse history: $e');
       return [];
     }
   }
-
 }
