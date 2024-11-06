@@ -21,7 +21,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // thumbicon for blower controller
+  // header variable
+  String fullname = "Your Name";
+  String imgURL = '';
+
+  // thumbicon for button controlling
   final MaterialStateProperty<Icon?> thumbIcon =
       MaterialStateProperty.resolveWith<Icon?>(
     (Set<MaterialState> states) {
@@ -33,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   );
 
   // light intensity variable
-  late int _lightIntensity;
+  int _lightIntensity = 0;
 
   // temperature varable
   late String _temperature;
@@ -49,7 +53,8 @@ class _HomePageState extends State<HomePage> {
   double valueHumidity = 0;
   late List<ChartData> chartData;
 
-  Timer? _timer; // Timer variable
+  late Future<UserModel?> _userFuture;
+  late Stream<Map<String, dynamic>?> _deviceStream;
 
   Widget panelControl() {
     return Container(
@@ -302,39 +307,37 @@ class _HomePageState extends State<HomePage> {
         ButtonGreen(
             title: 'Save',
             ontap: () async {
-              UserModel? userdata = await PersonController.getUserData();
+              // UserModel? userdata = await PersonController.getUserData();
 
-              if (userdata != null) {
-                Fluttertoast.showToast(
-                    msg:
-                        'fullname : ${userdata.fullName}, city: ${userdata.city} email : ${userdata.email}');
-              } else {
-                Fluttertoast.showToast(msg: "no userdata found");
-              }
+              // if (userdata != null) {
+              //   Fluttertoast.showToast(
+              //       msg:
+              //           'fullname : ${userdata.fullName}, city: ${userdata.city} email : ${userdata.email}');
+              // } else {
+              //   Fluttertoast.showToast(msg: "no userdata found");
+              // }
 
               // Fluttertoast.showToast(msg: 'Button Save Clicked');
+
+              bool addWarehouse = await DeviceController.addNewWarehouseHistory(
+                  '1730184375',
+                  valueHumidity.toInt(),
+                  _lightIntensity,
+                  int.parse(_temperature));
+
+              if (addWarehouse) {
+                Fluttertoast.showToast(msg: 'success save to database');
+              } else {
+                Fluttertoast.showToast(msg: 'Save Failed!');
+
+              }
             })
       ],
     );
   }
 
-  Future<void> _fetchDeviceData() async {
-    Map<String, dynamic>? deviceData =
-        await DeviceController.getDeviceData('1730184375');
-
-    if (mounted && deviceData != null) {
-      setState(() {
-        valueHumidity = double.parse(
-            deviceData['humidity']?.toString() ?? '0'); // Fetch humidity
-        _temperature =
-            deviceData['temperature']?.toString() ?? 'N/A'; // Fetch temperature
-        _lightIntensity = int.parse(deviceData['light_intensity']?.toString() ??
-            '0'); // Fetch light intensity
-
-        chartData = [ChartData('Humidity', valueHumidity)];
-      });
-    }
-    
+  Future<UserModel?> getUserInfo() {
+    return PersonController.getUserData();
   }
 
   // init state
@@ -342,10 +345,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    // Set the timer to fetch data every second
-    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
-      _fetchDeviceData();
-    });
+    _userFuture = getUserInfo(); // Memoize the future
+    _deviceStream =
+        DeviceController.streamDeviceData('1730184375'); // Memoize the stream
 
     // light intensity initialize
     _lightIntensity = 20;
@@ -366,28 +368,71 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void dispose() {
-    _timer?.cancel(); // Cancel the timer when disposing
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const HeaderHomeWidget(),
-            panelControl(),
-            lightIntensityMonitor(),
-            temperatureHumidity(),
-            saveButton()
-          ],
-        ),
+        child: SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FutureBuilder<UserModel?>(
+              future: _userFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                } else if (snapshot.hasData && snapshot.data != null) {
+                  String fullname = snapshot.data!.fullName;
+                  String? urlPhoto = snapshot.data?.profilePhoto ?? null;
+                  print('photo url : ${urlPhoto}');
+                  return HeaderHomeWidget(
+                      fullname: fullname, profileURL: urlPhoto ?? '');
+                } else {
+                  return const Center(child: Text("No data available"));
+                }
+              }),
+
+          panelControl(),
+          // StreamBuilder for device data
+          StreamBuilder<Map<String, dynamic>?>(
+            stream: _deviceStream, // Call the stream method
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text("Error: ${snapshot.error}"));
+              } else if (snapshot.hasData) {
+                final data = snapshot.data;
+
+                // Check if data is not null
+                if (data != null) {
+                  // Extract the necessary information
+                  // _lightIntensity = 20;
+                  _lightIntensity = data['light_intensity'];
+                  _temperature = data['temperature'].toString();
+                  valueHumidity = double.parse(data['humidity'].toString());
+                  chartData = [ChartData('Humidity', valueHumidity)];
+
+                  // Display or process the data as needed
+                  return Column(
+                    children: [
+                      lightIntensityMonitor(),
+                      temperatureHumidity(),
+                      saveButton(),
+                    ],
+                  );
+                } else {
+                  return const Center(child: Text("No device data available"));
+                }
+              } else {
+                return const Center(child: Text("No device data available"));
+              }
+            },
+          ),
+        ],
       ),
-    );
+    ));
   }
 }
 
