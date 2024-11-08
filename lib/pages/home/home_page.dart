@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/configuration/controllers/person_controller.dart';
 import 'package:potato_apps/model/user_model.dart';
@@ -43,10 +45,10 @@ class _HomePageState extends State<HomePage> {
   late String _temperature;
 
   // blower controller variable
-  late bool blowervalue;
+  bool blowervalue = false;
   late String blowerIndicator;
 
-  late bool automateValue;
+  bool automateValue = false;
   late String automateIndicator;
 
   // Data kelembaban dengan 50% sebagai contoh
@@ -55,6 +57,7 @@ class _HomePageState extends State<HomePage> {
 
   late Future<UserModel?> _userFuture;
   late Stream<Map<String, dynamic>?> _deviceStream;
+  bool? deviceMode;
 
   Widget panelControl() {
     return Container(
@@ -78,7 +81,6 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 flex: 4,
                 child: Container(
-                  padding: const EdgeInsets.all(12),
                   height: 128,
                   decoration: BoxDecoration(
                       color: fifthColor,
@@ -87,11 +89,14 @@ class _HomePageState extends State<HomePage> {
                     thumbIcon: thumbIcon,
                     blowerIndicator: blowerIndicator,
                     blowerValue: blowervalue,
+                    automate: automateValue,
                     onToggle: (bool value) {
                       setState(() {
                         blowervalue = value;
                         blowerIndicator = value ? "ON" : "OFF";
                       });
+                      DeviceController.setBlowerMode(
+                          AppConstant.deviceID, blowervalue);
                     },
                   ),
                 ),
@@ -130,6 +135,8 @@ class _HomePageState extends State<HomePage> {
                               automateValue = value;
                               automateIndicator = value ? "ON" : "OFF";
                             });
+                            DeviceController.setDeviceMode(
+                                AppConstant.deviceID, automateValue);
                           },
                         )
                       ],
@@ -307,18 +314,6 @@ class _HomePageState extends State<HomePage> {
         ButtonGreen(
             title: 'Save',
             ontap: () async {
-              // UserModel? userdata = await PersonController.getUserData();
-
-              // if (userdata != null) {
-              //   Fluttertoast.showToast(
-              //       msg:
-              //           'fullname : ${userdata.fullName}, city: ${userdata.city} email : ${userdata.email}');
-              // } else {
-              //   Fluttertoast.showToast(msg: "no userdata found");
-              // }
-
-              // Fluttertoast.showToast(msg: 'Button Save Clicked');
-
               bool addWarehouse = await DeviceController.addNewWarehouseHistory(
                   '1730184375',
                   valueHumidity.toInt(),
@@ -329,7 +324,6 @@ class _HomePageState extends State<HomePage> {
                 Fluttertoast.showToast(msg: 'success save to database');
               } else {
                 Fluttertoast.showToast(msg: 'Save Failed!');
-
               }
             })
       ],
@@ -340,27 +334,51 @@ class _HomePageState extends State<HomePage> {
     return PersonController.getUserData();
   }
 
+  Future<bool?> getModeInfo() async {
+    return await DeviceController.getDeviceMode('deviceId');
+  }
+
+  void getDeviceMode(String deviceId) async {
+    deviceMode = await DeviceController.getDeviceMode(deviceId);
+    setState(() {
+      automateValue = deviceMode ?? false;
+      automateIndicator = automateValue ? "ON" : "OFF";
+    });
+    print("Device mode: $deviceMode");
+  }
+
+  void getBlowerMode(String deviceId) async {
+    deviceMode = await DeviceController.getBlowerMode(deviceId);
+    setState(() {
+      blowervalue = deviceMode ?? false;
+      blowerIndicator = automateValue ? "ON" : "OFF";
+    });
+    print("Blower mode: $deviceMode");
+  }
+
   // init state
   @override
   void initState() {
     super.initState();
 
+    // automation initialize
+    getDeviceMode(AppConstant.deviceID);
+    print(automateValue);
+    automateIndicator = automateValue ? "ON" : "OFF";
+
+    // blower initialize
+    getBlowerMode(AppConstant.deviceID);
+    print(blowervalue);
+    blowerIndicator = blowervalue ? "ON" : "OFF";
+
     _userFuture = getUserInfo(); // Memoize the future
-    _deviceStream =
-        DeviceController.streamDeviceData('1730184375'); // Memoize the stream
+    _deviceStream = DeviceController.streamDeviceData(
+        AppConstant.deviceID); // Memoize the stream
 
     // light intensity initialize
     _lightIntensity = 20;
 
     _temperature = "0";
-
-    // blower initialize
-    blowervalue = false;
-    blowerIndicator = blowervalue ? "ON" : "OFF";
-
-    // automation initialize
-    automateValue = false;
-    automateIndicator = automateValue ? "ON" : "OFF";
 
     chartData = [
       ChartData('Humidity', valueHumidity), // 50% humidity
