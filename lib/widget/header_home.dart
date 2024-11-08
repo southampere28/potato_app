@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:potato_apps/theme.dart';
+import 'package:intl/intl.dart';
 
 class HeaderHomeWidget extends StatelessWidget {
-  const HeaderHomeWidget({super.key});
+  const HeaderHomeWidget({super.key, required this.fullname, this.profileURL});
+
+  final String fullname;
+  final String? profileURL;
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final formattedDate = DateFormat('dd MMMM, yyyy').format(now);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
@@ -32,25 +39,33 @@ class HeaderHomeWidget extends StatelessWidget {
                 style: whiteTextStyle,
               ),
               Text(
-                'Ilham Islamy',
+                fullname,
                 style: whiteTextStyle.copyWith(
                     fontSize: 24,
                     fontWeight: bold,
                     overflow: TextOverflow.ellipsis),
               ),
               Text(
-                '30 Oktober, 2024',
+                formattedDate,
                 style: whiteTextStyle,
               ),
             ],
           )),
           ClipOval(
-              child: Image.asset(
-            'assets/img_sample.jpeg',
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-          ))
+            child: profileURL != ''
+                ? Image.network(
+                    profileURL!,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                  )
+                : Image.asset(
+                    'assets/icon_profile.png',
+                    height: 50,
+                    width: 50,
+                    fit: BoxFit.cover,
+                  ),
+          )
         ],
       ),
     );
