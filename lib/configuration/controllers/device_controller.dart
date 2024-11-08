@@ -52,6 +52,80 @@ class DeviceController {
     });
   }
 
+  // Function to set device blower mode to auto or manual in the realtime database
+  static Future<void> setBlowerMode(String deviceId, bool isOn) async {
+    try {
+      // Set mode in the device node
+      await _database
+          .child('device/$deviceId/blower_status')
+          .set(isOn ? 'ON' : 'OFF');
+      print(
+          "Device mode set to ${isOn ? 'ON' : 'OFF'} for device ID: $deviceId");
+    } catch (e) {
+      print("Error setting device mode: $e");
+    }
+  }
+
+  // Function to return boolean blowermode 
+  static Future<bool?> getBlowerMode(String deviceId) async {
+    try {
+      // Get the current mode value from the device node
+      DatabaseEvent event =
+          await _database.child('device/$deviceId/blower_status').once();
+      String? status = event.snapshot.value as String?;
+
+      // Check the mode value and return true for 'auto', false for 'manual'
+      if (status == 'ON') {
+        return true;
+      } else if (status == 'OFF') {
+        return false;
+      } else {
+        print("Invalid mode value for device ID: $deviceId");
+        return null; // Return null if mode value is invalid
+      }
+    } catch (e) {
+      print("Error getting device mode: $e");
+      return null;
+    }
+  }
+
+  // Function to set device mode to auto or manual in the realtime database
+  static Future<void> setDeviceMode(String deviceId, bool isAuto) async {
+    try {
+      // Set mode in the device node
+      await _database
+          .child('device/$deviceId/mode')
+          .set(isAuto ? 'auto' : 'manual');
+      print(
+          "Device mode set to ${isAuto ? 'auto' : 'manual'} for device ID: $deviceId");
+    } catch (e) {
+      print("Error setting device mode: $e");
+    }
+  }
+
+  // Function to return boolean mode
+  static Future<bool?> getDeviceMode(String deviceId) async {
+    try {
+      // Get the current mode value from the device node
+      DatabaseEvent event =
+          await _database.child('device/$deviceId/mode').once();
+      String? mode = event.snapshot.value as String?;
+
+      // Check the mode value and return true for 'auto', false for 'manual'
+      if (mode == 'auto') {
+        return true;
+      } else if (mode == 'manual') {
+        return false;
+      } else {
+        print("Invalid mode value for device ID: $deviceId");
+        return null; // Return null if mode value is invalid
+      }
+    } catch (e) {
+      print("Error getting device mode: $e");
+      return null;
+    }
+  }
+
   static Future<bool> addNewWarehouseHistory(String deviceId, int humidity,
       int lightIntensity, int temperature) async {
     try {
@@ -82,6 +156,7 @@ class DeviceController {
           .collection('device')
           .doc(deviceId)
           .collection('warehouse_history')
+          .orderBy('created_at', descending: true)
           .get();
       return querySnapshot.docs
           .map((doc) =>
