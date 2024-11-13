@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/button_green.dart';
 import 'package:potato_apps/widget/button_outline_green.dart';
@@ -58,6 +59,19 @@ class _DetectionPageState extends State<DetectionPage> {
     }
   }
 
+  Future<void> _takePhotoEsp() async {
+    Fluttertoast.showToast(msg: 'Taking picture from espcam');
+    final result = await DeviceController.captureImage();
+    if (result != null) {
+      setState(() {
+        _imageFile = result;
+      });
+      Fluttertoast.showToast(msg: 'Gambar Berhasil ditangkap');
+    } else {
+      Fluttertoast.showToast(msg: 'Error, gagal menangkap gambar');
+    }
+  }
+
   Widget switchButton() {
     return Container(
       padding: const EdgeInsets.all(5),
@@ -93,7 +107,6 @@ class _DetectionPageState extends State<DetectionPage> {
                 ? titleMsg = "Connect Phone Cam"
                 : titleMsg = "Connect EspCam";
           });
-          Fluttertoast.showToast(msg: '$index');
         },
       ),
     );
@@ -118,7 +131,7 @@ class _DetectionPageState extends State<DetectionPage> {
             height: 16,
           ),
           GestureDetector(
-            onTap: () => _pickImage(),
+            onTap: () => selectedIndex == 0 ? _pickImage() : _takePhotoEsp(),
             child: Container(
               width: double.infinity,
               height: 198,
@@ -215,10 +228,28 @@ class _DetectionPageState extends State<DetectionPage> {
 
   Widget buttonGreen() {
     return ButtonGreen(
-        title: 'Analyze',
-        ontap: () {
-          Fluttertoast.showToast(msg: 'Button Analyze Clicked');
-        });
+      title: 'Analyze',
+      ontap: () async {
+        if (_imageFile != null) {
+          Fluttertoast.showToast(msg: 'Analyzing image...');
+
+          // Call the API to send the image and get the result
+          final result =
+              await DeviceController.sendImageForAnalysis(_imageFile!);
+
+          if (result != null) {
+            // Show result in a toast message or handle it in any other way
+            Fluttertoast.showToast(
+              msg: 'Analysis Result: ${result['quality']}',
+            );
+          } else {
+            Fluttertoast.showToast(msg: 'Failed to analyze image.');
+          }
+        } else {
+          Fluttertoast.showToast(msg: 'No image selected');
+        }
+      },
+    );
   }
 
   Widget buttonOutlineGreen() {
