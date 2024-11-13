@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -8,6 +10,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/model/device_model.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 class DeviceController {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -66,7 +70,7 @@ class DeviceController {
     }
   }
 
-  // Function to return boolean blowermode 
+  // Function to return boolean blowermode
   static Future<bool?> getBlowerMode(String deviceId) async {
     try {
       // Get the current mode value from the device node
@@ -165,6 +169,68 @@ class DeviceController {
     } catch (e) {
       print('Error retrieving warehouse history: $e');
       return [];
+    }
+  }
+
+  // Function to send image data to the Flask API and receive JSON response
+  static Future<Map<String, dynamic>?> sendImageForAnalysis(
+      File imageFile) async {
+    try {
+      // API endpoint URL
+      final url = Uri.parse("${AppConstant.flaskURL}/predict");
+
+      // Create a multipart request
+      var request = http.MultipartRequest('POST', url);
+
+      // Add the image file to the request
+      request.files
+          .add(await http.MultipartFile.fromPath('image_file', imageFile.path));
+
+      // Send the request
+      var response = await request.send();
+
+      // Handle response
+      if (response.statusCode == 200) {
+        final responseData = await http.Response.fromStream(response);
+        return jsonDecode(responseData.body) as Map<String, dynamic>;
+      } else {
+        print("Failed to analyze image. Status code: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error sending image for analysis: $e");
+      return null;
+    }
+  }
+
+  // Function to capture image from ESP32-CAM
+  static Future<File?> captureImage() async {
+    try {
+      final response = await http
+          .get(Uri.parse(AppConstant.espCamURL))
+          .timeout(const Duration(seconds: 10)); // Adjust the timeout here
+
+      if (response.statusCode == 200) {
+        print("Gambar berhasil diambil dari ESP32-CAM.");
+
+        // Get the temporary directory
+        final tempDir = await getTemporaryDirectory();
+        final filePath = '${tempDir.path}/captured_image.jpg';
+
+        // Save the image to a file
+        final imageFile = File(filePath);
+        await imageFile.writeAsBytes(response.bodyBytes);
+
+        return imageFile;
+      } else {
+        print(
+            "Gagal menangkap gambar dari ESP32-CAM. Status code: ${response.statusCode}");
+        print("Response body: ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("Error capturing image from ESP32-CAM: $e");
+      return null;
     }
   }
 }
