@@ -61,20 +61,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> fetchUserData() async {
-    UserModel? userInfo = await getUserInfo();
-
-    if (mounted && userInfo != null) {
-      setState(() {
-        _nameController.text = userInfo.fullName;
-        _emailController.text = userInfo.email;
-        _cityController.text = userInfo.city;
-        _workController.text = userInfo.work;
-        imageURL = userInfo.profilePhoto;
-      });
-    }
-  }
-
   // Stream<UserModel?> getUserInfo() {
   //   return PersonController.getUserDataStream();
   // }
@@ -106,11 +92,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             'assets/icon_profile.png',
                             height: 120,
                             width: 120,
+                            fit: BoxFit.cover,
                           )
                         : Image.network(
                             imageURL,
                             height: 120,
                             width: 120,
+                            fit: BoxFit.cover,
                           )),
             Positioned(
               right: -2,
