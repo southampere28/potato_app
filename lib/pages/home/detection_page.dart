@@ -38,15 +38,122 @@ class _DetectionPageState extends State<DetectionPage> {
   late String iconCamera;
   late String titleMsg;
   late int? selectedIndex = 0;
+  int selectedResourceImg = 0;
 
   File? _imageFile;
   String? _imgName;
 
+  Future showImageResource() {
+    return showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.2,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: double.infinity,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedResourceImg = 0;
+                            });
+                            _pickImage();
+                          },
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border:
+                                    Border.all(color: primaryColor, width: 2)),
+                            child: Icon(
+                              Icons.camera_alt_rounded,
+                              size: 30,
+                              color: primaryColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Text(
+                          'Camera',
+                          style: primaryGreenTextStyle.copyWith(
+                              fontSize: 14, fontWeight: bold),
+                        )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 30,
+                  ),
+                  SizedBox(
+                    height: double.infinity,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            setState(() {
+                              selectedResourceImg = 1;
+                            });
+                            await _pickImage();
+
+                            await Future.delayed(
+                                const Duration(milliseconds: 500));
+
+                            // Check if the modal is still open before trying to close it.
+                            if (Navigator.of(context).canPop()) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Image.asset(
+                                'assets/icon_gallery.png',
+                                width: 30,
+                                height: 30,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Text(
+                          'Gallery',
+                          style: primaryGreenTextStyle.copyWith(
+                              fontSize: 14, fontWeight: bold),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   Future<void> _pickImage() async {
     try {
       final image = await ImagePicker().pickImage(
-          source:
-              selectedIndex == 0 ? ImageSource.camera : ImageSource.gallery);
+          source: selectedResourceImg == 0
+              ? ImageSource.camera
+              : ImageSource.gallery);
 
       if (image == null) return;
 
@@ -131,7 +238,8 @@ class _DetectionPageState extends State<DetectionPage> {
             height: 16,
           ),
           GestureDetector(
-            onTap: () => selectedIndex == 0 ? _pickImage() : _takePhotoEsp(),
+            onTap: () =>
+                selectedIndex == 0 ? showImageResource() : _takePhotoEsp(),
             child: Container(
               width: double.infinity,
               height: 198,
