@@ -351,7 +351,7 @@ class _HomePageState extends State<HomePage> {
     deviceMode = await DeviceController.getBlowerMode(deviceId);
     setState(() {
       blowervalue = deviceMode ?? false;
-      blowerIndicator = automateValue ? "ON" : "OFF";
+      blowerIndicator = blowervalue ? "ON" : "OFF";
     });
     print("Blower mode: $deviceMode");
   }

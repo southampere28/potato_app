@@ -75,6 +75,8 @@ class _BlowerCardState extends State<BlowerCard> {
                     'Mode Auto ON',
                     style: primaryTextStyle.copyWith(
                         fontWeight: bold, overflow: TextOverflow.ellipsis),
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
                   ),
                 ),
               )
