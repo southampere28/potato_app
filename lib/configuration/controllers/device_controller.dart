@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,9 +13,13 @@ import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/model/device_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class DeviceController {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  static final FirebaseStorage _storage = FirebaseStorage.instance;
 
   static final DatabaseReference _database = FirebaseDatabase.instanceFor(
     app: Firebase.app(),
@@ -231,6 +236,112 @@ class DeviceController {
     } catch (e) {
       print("Error capturing image from ESP32-CAM: $e");
       return null;
+    }
+  }
+
+  static Future<File> testCompressAndGetFile(
+      File file, String targetPath) async {
+    var result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 80,
+    );
+
+    print(file.lengthSync());
+    print(result!.length());
+
+    return (result) as File;
+  }
+
+  static Future<String?> uploadImage(File imageFile) async {
+    var deviceId = AppConstant.deviceID;
+
+    try {
+      // Define a temporary path for the compressed file
+      String tempDir = '/tmp'; // Adjust for your platform/environment
+      String targetPath =
+          '$tempDir/${DateTime.now().millisecondsSinceEpoch}_compressed.jpg';
+
+      // Compress the image
+      // File? compressed = await testCompressAndGetFile(imageFile, targetPath);
+
+      // if (compressed == null) {
+      //   print("Failed to compress the image.");
+      //   return null;
+      // }
+
+      // Define the storage path and file name in Firebase
+      String filePath =
+          'photo/$deviceId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      // Upload the compressed file to Firebase Storage
+      final uploadTask = await _storage.ref(filePath).putFile(
+            imageFile,
+            SettableMetadata(contentType: "image/jpeg"),
+          );
+
+      // Get the download URL of the uploaded image
+      String downloadURL = await uploadTask.ref.getDownloadURL();
+
+      print("Image uploaded successfully. URL: $downloadURL");
+
+      return downloadURL;
+    } catch (e) {
+      print("Error uploading image: $e");
+      return null;
+    }
+  }
+
+  // function save history detection to firebase
+  static Future<bool> addNewDetectionHistory(
+      String deviceId, String result, String linkImage) async {
+    try {
+      // Create a new document with the given parameters and current timestamp
+      await _firestore
+          .collection('device')
+          .doc(deviceId)
+          .collection('detect_history')
+          .add({
+        'created_at': FieldValue.serverTimestamp(),
+        'result': result,
+        'image_detect': linkImage,
+      });
+      print("Detect history added successfully.");
+      return true;
+    } catch (e) {
+      print("Error adding new detect history: $e");
+      return false;
+    }
+  }
+
+  // Function to save detection history with the uploaded image URL
+  static Future<bool> saveDetectionWithImage(
+      String result, File? imgFile) async {
+    var deviceId = AppConstant.deviceID;
+
+    try {
+      // Check if an image file is provided
+      if (imgFile == null) {
+        print("No image selected.");
+        return false;
+      }
+
+      // Upload the image and get the download URL
+      String? imageUrl = await uploadImage(imgFile);
+      if (imageUrl == null) {
+        print("Failed to get image URL.");
+        return false;
+      }
+
+      // Save detection history with the image URL
+      bool success = await addNewDetectionHistory(deviceId, result, imageUrl);
+      if (success) {
+        print("Detection history saved with image URL.");
+      }
+      return success; // Return the success status of addNewDetectionHistory
+    } catch (e) {
+      print("Error in saving detection with image: $e");
+      return false; // Return false in case of an exception
     }
   }
 }
