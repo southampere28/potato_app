@@ -5,12 +5,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/button_green.dart';
 import 'package:potato_apps/widget/button_outline_green.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
 class DetectionPage extends StatefulWidget {
   const DetectionPage({super.key});
@@ -39,6 +41,9 @@ class _DetectionPageState extends State<DetectionPage> {
   late String titleMsg;
   late int? selectedIndex = 0;
   int selectedResourceImg = 0;
+
+  // result detection
+  String? resultDetect;
 
   File? _imageFile;
   String? _imgName;
@@ -279,7 +284,6 @@ class _DetectionPageState extends State<DetectionPage> {
           Container(
             padding: const EdgeInsets.all(24),
             width: double.infinity,
-            height: 256,
             decoration: BoxDecoration(
                 color: fifthColor,
                 borderRadius: BorderRadius.circular(16),
@@ -300,22 +304,24 @@ class _DetectionPageState extends State<DetectionPage> {
                             borderRadius: BorderRadius.circular(12),
                             child: Image.file(
                               _imageFile!,
-                              height: 132,
+                              height: 160,
                               fit: BoxFit.cover,
                             ),
                           )
                         : Image.asset(
                             'assets/image_potato.png',
-                            height: 132,
+                            height: 160,
                           ),
                   ],
                 ),
                 const SizedBox(
                   height: 16,
                 ),
-                Text('Total : 12'),
-                Text('Healthy Potato : 10'),
-                Text('Cursed Potato : 2'),
+                Text(
+                  'Result : ${resultDetect ?? '(None)'}',
+                  style: blackTextStyle.copyWith(
+                      fontSize: 16, fontWeight: semiBold),
+                ),
               ],
             ),
           ),
@@ -347,6 +353,9 @@ class _DetectionPageState extends State<DetectionPage> {
 
           if (result != null) {
             // Show result in a toast message or handle it in any other way
+            setState(() {
+              resultDetect = result['quality'];
+            });
             Fluttertoast.showToast(
               msg: 'Analysis Result: ${result['quality']}',
             );
@@ -362,9 +371,34 @@ class _DetectionPageState extends State<DetectionPage> {
 
   Widget buttonOutlineGreen() {
     return ButtonOutlineGreen(
-        title: 'History',
-        ontap: () {
-          Fluttertoast.showToast(msg: 'Button History Clicked');
+        title: 'Save',
+        ontap: () async {
+          Fluttertoast.showToast(msg: 'Saving...');
+
+          var result = await DeviceController.saveDetectionWithImage(
+              resultDetect ?? '(Undetected)', _imageFile);
+
+          if (result) {
+            // Fluttertoast.showToast(msg: 'Success save History');
+            final snackBar = SnackBar(
+              /// need to set following properties for best effect of awesome_snackbar_content
+              elevation: 0,
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.transparent,
+              content: AwesomeSnackbarContent(
+                title: 'Success!',
+                message: 'History detect was saved!',
+
+                /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                contentType: ContentType.success,
+              ),
+            );
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(snackBar);
+          } else {
+            Fluttertoast.showToast(msg: 'Failed save History');
+          }
         });
   }
 
