@@ -7,9 +7,12 @@ import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/configuration/controllers/person_controller.dart';
 import 'package:potato_apps/model/user_model.dart';
+import 'package:potato_apps/pages/home/main_page.dart';
+import 'package:potato_apps/pages/setting_page.dart';
 import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/blower_card.dart';
 import 'package:potato_apps/widget/button_green.dart';
+import 'package:potato_apps/widget/device_info.dart';
 import 'package:potato_apps/widget/header_home.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_charts/sparkcharts.dart';
@@ -59,19 +62,55 @@ class _HomePageState extends State<HomePage> {
   late Stream<Map<String, dynamic>?> _deviceStream;
   bool? deviceMode;
 
+  Widget deviceInfo() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 24, bottom: 4, right: 22, left: 22),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          DeviceInfoCard(
+              title: "Device 1", assetIcon: 'assets/device.png', widthIcon: 28),
+          SizedBox(
+            width: 8,
+          ),
+          DeviceInfoCard(
+              title: "Gudang 1",
+              assetIcon: 'assets/warehouse.png',
+              widthIcon: 23),
+        ],
+      ),
+    );
+  }
+
   Widget panelControl() {
     return Container(
       padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(left: 16, right: 16, top: 24),
+      margin: const EdgeInsets.only(left: 16, right: 16),
       width: double.infinity,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20), color: primaryColor),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Panel Controlling',
-            style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Panel Controlling',
+                style: whiteTextStyle.copyWith(fontSize: 18, fontWeight: bold),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/settings');
+                },
+                child: Image.asset(
+                  'assets/icon_setting.png',
+                  height: 24,
+                ),
+              )
+            ],
           ),
           const SizedBox(
             height: 12,
@@ -96,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                         blowerIndicator = value ? "ON" : "OFF";
                       });
                       DeviceController.setBlowerMode(
-                          AppConstant.deviceID, blowervalue);
+                          AppConstant.chooseDevice, blowervalue);
                     },
                   ),
                 ),
@@ -136,7 +175,7 @@ class _HomePageState extends State<HomePage> {
                               automateIndicator = value ? "ON" : "OFF";
                             });
                             DeviceController.setDeviceMode(
-                                AppConstant.deviceID, automateValue);
+                                AppConstant.chooseDevice, automateValue);
                           },
                         )
                       ],
@@ -362,18 +401,18 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     // automation initialize
-    getDeviceMode(AppConstant.deviceID);
+    getDeviceMode(AppConstant.chooseDevice);
     print(automateValue);
     automateIndicator = automateValue ? "ON" : "OFF";
 
     // blower initialize
-    getBlowerMode(AppConstant.deviceID);
+    getBlowerMode(AppConstant.chooseDevice);
     print(blowervalue);
     blowerIndicator = blowervalue ? "ON" : "OFF";
 
     _userFuture = getUserInfo(); // Memoize the future
     _deviceStream = DeviceController.streamDeviceData(
-        AppConstant.deviceID); // Memoize the stream
+        AppConstant.chooseDevice); // Memoize the stream
 
     // light intensity initialize
     _lightIntensity = 20;
@@ -410,7 +449,7 @@ class _HomePageState extends State<HomePage> {
                   return const Center(child: Text("No data available"));
                 }
               }),
-
+          deviceInfo(),
           panelControl(),
           // StreamBuilder for device data
           StreamBuilder<Map<String, dynamic>?>(
