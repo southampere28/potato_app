@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -239,36 +240,40 @@ class DeviceController {
     }
   }
 
-  static Future<File> testCompressAndGetFile(
-      File file, String targetPath) async {
-    var result = await FlutterImageCompress.compressAndGetFile(
+  static Future<Uint8List> testCompressFile(File file) async {
+    var result = await FlutterImageCompress.compressWithFile(
       file.absolute.path,
-      targetPath,
-      quality: 80,
+      minWidth: 2300,
+      minHeight: 1500,
+      quality: 70,
     );
-
     print(file.lengthSync());
-    print(result!.length());
+    print(result!.length);
 
-    return (result) as File;
+    return result;
+  }
+
+  static Future<File> uint8ListToFile(Uint8List data, String fileName) async {
+    // Get the temporary directory
+    final tempDir = await getTemporaryDirectory();
+
+    // Create a full file path in the temporary directory
+    String filePath = '${tempDir.path}/$fileName';
+
+    // Write the data to the file
+    File file = File(filePath);
+    return await file.writeAsBytes(data);
   }
 
   static Future<String?> uploadImage(File imageFile) async {
     var deviceId = AppConstant.deviceID;
 
     try {
-      // Define a temporary path for the compressed file
-      String tempDir = '/tmp'; // Adjust for your platform/environment
-      String targetPath =
-          '$tempDir/${DateTime.now().millisecondsSinceEpoch}_compressed.jpg';
+      
+      Uint8List compressed = await testCompressFile(imageFile);
 
-      // Compress the image
-      // File? compressed = await testCompressAndGetFile(imageFile, targetPath);
-
-      // if (compressed == null) {
-      //   print("Failed to compress the image.");
-      //   return null;
-      // }
+      File compressedFinish =
+          await uint8ListToFile(compressed, 'compressedimagefile.jpg');
 
       // Define the storage path and file name in Firebase
       String filePath =
@@ -276,7 +281,7 @@ class DeviceController {
 
       // Upload the compressed file to Firebase Storage
       final uploadTask = await _storage.ref(filePath).putFile(
-            imageFile,
+            compressedFinish,
             SettableMetadata(contentType: "image/jpeg"),
           );
 
@@ -342,6 +347,25 @@ class DeviceController {
     } catch (e) {
       print("Error in saving detection with image: $e");
       return false; // Return false in case of an exception
+    }
+  }
+
+  // Function to retrieve warehouse history for a specific device
+  static Future<List<DetectHistory>> getDetectHistory(String deviceId) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('device')
+          .doc(deviceId)
+          .collection('detect_history')
+          .orderBy('created_at', descending: true)
+          .get();
+      return querySnapshot.docs
+          .map((doc) =>
+              DetectHistory.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error retrieving warehouse history: $e');
+      return [];
     }
   }
 }
