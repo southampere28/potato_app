@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/configuration/controllers/device_controller.dart';
+import 'package:potato_apps/pages/home/main_page.dart';
 import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/button_green.dart';
 import 'package:potato_apps/widget/button_outline_green.dart';
@@ -23,6 +24,7 @@ class DetectionPage extends StatefulWidget {
 
 AppBar headerGreen() {
   return AppBar(
+    automaticallyImplyLeading: false,
     backgroundColor: primaryColor,
     centerTitle: true,
     shape: RoundedRectangleBorder(
@@ -300,12 +302,35 @@ class _DetectionPageState extends State<DetectionPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _imageFile != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              _imageFile!,
-                              height: 160,
-                              fit: BoxFit.cover,
+                        ? GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('Image Preview'),
+                                  content: Image(
+                                    image: FileImage(
+                                        _imageFile!), // Replace with your image URL or path
+                                    fit: BoxFit.cover,
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text('Close'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                _imageFile!,
+                                height: 140,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           )
                         : Image.asset(
@@ -387,7 +412,7 @@ class _DetectionPageState extends State<DetectionPage> {
               backgroundColor: Colors.transparent,
               content: AwesomeSnackbarContent(
                 title: 'Success!',
-                message: 'History detect was saved!',
+                message: 'Result detect was saved!',
 
                 /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
                 contentType: ContentType.success,
@@ -397,7 +422,23 @@ class _DetectionPageState extends State<DetectionPage> {
               ..hideCurrentSnackBar()
               ..showSnackBar(snackBar);
           } else {
-            Fluttertoast.showToast(msg: 'Failed save History');
+            // Fluttertoast.showToast(msg: 'Failed save History');
+            final snackBar = SnackBar(
+              /// need to set following properties for best effect of awesome_snackbar_content
+              elevation: 0,
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.transparent,
+              content: AwesomeSnackbarContent(
+                title: 'Failed!',
+                message: 'Error While Saving Result Detection!',
+
+                /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                contentType: ContentType.failure,
+              ),
+            );
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(snackBar);
           }
         });
   }
