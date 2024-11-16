@@ -17,6 +17,13 @@ dependencies:
   image_picker: ^0.8.4+2
   stroke_text: any
   firebase_database: ^10.4.9
+  intl: ^0.17.0
+  http: ^1.2.0
+  firebase_storage: ^11.6.9
+  flutter_native_image: ^0.0.6+1
+  flutter_image_compress: 2.2.0
+  awesome_snackbar_content: ^0.1.1
+  lottie: ^3.1.2
 
 dev_dependencies:
   flutter_test:
@@ -36,3 +43,4 @@ flutter:
     - assets/icon_detect.png
     - assets/icon_history.png
     - assets/icon_profile.png
+    - assets/animations/
