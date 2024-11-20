@@ -28,21 +28,23 @@ class DeviceController {
   ).ref();
 
   // Function to get device data by device ID
-  static Future<Map<String, dynamic>?> getDeviceData(String deviceId) async {
+  static Future<DeviceModel?> getDeviceData(String deviceId) async {
     try {
-      // Retrieve data from the specific device node
-      DatabaseEvent event = await _database.child('device/$deviceId').once();
+      // Retrieve the document from Firestore
+      DocumentSnapshot doc =
+          await _firestore.collection('device').doc(deviceId).get();
 
-      // Check if the data exists
-      if (event.snapshot.value != null) {
-        // Return the data as a Map
-        return Map<String, dynamic>.from(event.snapshot.value as Map);
+      // Check if the document exists
+      if (doc.exists) {
+        print('device with ${deviceId} obtained');
+        // Convert the document to a DeviceModel and return it
+        return DeviceModel.fromFirestore(doc);
       } else {
-        print("No data found for device ID: $deviceId");
+        print("Device with ID $deviceId does not exist.");
         return null;
       }
     } catch (e) {
-      print("Error getting device data: $e");
+      print("Error retrieving device model: $e");
       return null;
     }
   }
@@ -221,7 +223,10 @@ class DeviceController {
 
         // Get the temporary directory
         final tempDir = await getTemporaryDirectory();
-        final filePath = '${tempDir.path}/captured_image.jpg';
+        // Generate a unique file name using timestamp
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+        final filePath = '${tempDir.path}/captured_image$timestamp.jpg';
 
         // Save the image to a file
         final imageFile = File(filePath);
@@ -265,11 +270,8 @@ class DeviceController {
     return await file.writeAsBytes(data);
   }
 
-  static Future<String?> uploadImage(File imageFile) async {
-    var deviceId = AppConstant.deviceID;
-
+  static Future<String?> uploadImage(File imageFile, String deviceId) async {
     try {
-      
       Uint8List compressed = await testCompressFile(imageFile);
 
       File compressedFinish =
@@ -321,9 +323,7 @@ class DeviceController {
 
   // Function to save detection history with the uploaded image URL
   static Future<bool> saveDetectionWithImage(
-      String result, File? imgFile) async {
-    var deviceId = AppConstant.deviceID;
-
+      String deviceId, String result, File? imgFile) async {
     try {
       // Check if an image file is provided
       if (imgFile == null) {
@@ -332,7 +332,7 @@ class DeviceController {
       }
 
       // Upload the image and get the download URL
-      String? imageUrl = await uploadImage(imgFile);
+      String? imageUrl = await uploadImage(imgFile, deviceId);
       if (imageUrl == null) {
         print("Failed to get image URL.");
         return false;
