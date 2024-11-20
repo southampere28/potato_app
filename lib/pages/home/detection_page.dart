@@ -328,6 +328,7 @@ class _DetectionPageState extends State<DetectionPage> {
                               borderRadius: BorderRadius.circular(12),
                               child: Image.file(
                                 _imageFile!,
+                                key: ValueKey(DateTime.now().toString()),
                                 height: 140,
                                 fit: BoxFit.cover,
                               ),
@@ -401,7 +402,9 @@ class _DetectionPageState extends State<DetectionPage> {
           Fluttertoast.showToast(msg: 'Saving...');
 
           var result = await DeviceController.saveDetectionWithImage(
-              resultDetect ?? '(Undetected)', _imageFile);
+              AppConstant.chooseDevice,
+              resultDetect ?? '(Undetected)',
+              _imageFile);
 
           if (result) {
             // Fluttertoast.showToast(msg: 'Success save History');

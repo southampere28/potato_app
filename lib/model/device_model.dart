@@ -23,10 +23,10 @@ class DeviceModel {
       id: doc.id,
       deviceName: data['device_name'] ?? '',
       warehouse: data['warehouse'] ?? '',
-      warehouseHistory: (data['warehouse_history'] as List<dynamic>)
+      warehouseHistory: (data['warehouse_history'] as List<dynamic>? ?? [])
           .map((item) => WarehouseHistory.fromMap(item as Map<String, dynamic>))
           .toList(),
-      detectHistory: (data['detect_history'] as List<dynamic>)
+      detectHistory: (data['detect_history'] as List<dynamic>? ?? [])
           .map((item) => DetectHistory.fromMap(item as Map<String, dynamic>))
           .toList(),
     );
@@ -37,7 +37,8 @@ class DeviceModel {
     return {
       'device_name': deviceName,
       'warehouse': warehouse,
-      'warehouse_history': warehouseHistory.map((item) => item.toMap()).toList(),
+      'warehouse_history':
+          warehouseHistory.map((item) => item.toMap()).toList(),
       'detect_history': detectHistory.map((item) => item.toMap()).toList(),
     };
   }
@@ -45,9 +46,9 @@ class DeviceModel {
 
 class WarehouseHistory {
   final Timestamp createdAt;
-  final double humidity;
-  final double temperature;
-  final double lightIntensity;
+  final int humidity;
+  final int temperature;
+  final int lightIntensity;
 
   WarehouseHistory({
     required this.createdAt,
@@ -60,9 +61,9 @@ class WarehouseHistory {
   factory WarehouseHistory.fromMap(Map<String, dynamic> data) {
     return WarehouseHistory(
       createdAt: data['created_at'] ?? Timestamp.now(),
-      humidity: (data['humidity'] ?? 0).toDouble(),
-      temperature: (data['temperature'] ?? 0).toDouble(),
-      lightIntensity: (data['light_intensity'] ?? 0).toDouble(),
+      humidity: (data['humidity'] ?? 0),
+      temperature: (data['temperature'] ?? 0),
+      lightIntensity: (data['light_intensity'] ?? 0),
     );
   }
 
@@ -80,16 +81,12 @@ class WarehouseHistory {
 class DetectHistory {
   final Timestamp createdAt;
   final String imageDetect;
-  final int cursedPotato;
-  final int normalPotato;
-  final int totalAll;
+  final String resultDetect;
 
   DetectHistory({
     required this.createdAt,
     required this.imageDetect,
-    required this.cursedPotato,
-    required this.normalPotato,
-    required this.totalAll,
+    required this.resultDetect,
   });
 
   // Factory constructor to create DetectHistory from a map
@@ -97,9 +94,7 @@ class DetectHistory {
     return DetectHistory(
       createdAt: data['created_at'] ?? Timestamp.now(),
       imageDetect: data['image_detect'] ?? '',
-      cursedPotato: data['cursed_potato'] ?? 0,
-      normalPotato: data['normal_potato'] ?? 0,
-      totalAll: data['total_all'] ?? 0,
+      resultDetect: data['result'] ?? 0,
     );
   }
 
@@ -108,9 +103,7 @@ class DetectHistory {
     return {
       'created_at': createdAt,
       'image_detect': imageDetect,
-      'cursed_potato': cursedPotato,
-      'normal_potato': normalPotato,
-      'total_all': totalAll,
+      'result': resultDetect,
     };
   }
 }

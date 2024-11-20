@@ -15,6 +15,7 @@ class HistoryPage extends StatefulWidget {
 
 AppBar headerGreen() {
   return AppBar(
+    automaticallyImplyLeading: false,
     backgroundColor: primaryColor,
     centerTitle: true,
     shape: RoundedRectangleBorder(
@@ -144,7 +145,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
                 // Display the fetched detect history
                 final historyList = snapshot.data!;
-                
+
                 return SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
@@ -168,13 +169,22 @@ class _HistoryPageState extends State<HistoryPage> {
                         final history = historyList[index];
                         return DataRow(cells: [
                           DataCell(Text('${index + 1}', style: whiteTextStyle)),
-                          DataCell(Text('${history.resultDetect}',
+                          DataCell(Text(history.resultDetect,
                               style: whiteTextStyle)),
                           DataCell(Text(
-                              '${history.createdAt.toDate().toLocal().toString().split(' ')[0]}',
+                              history.createdAt
+                                  .toDate()
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')[0],
                               style: whiteTextStyle)), // Date
                           DataCell(Text(
-                              '${history.createdAt.toDate().toLocal().toString().split(' ')[1].split('.')[0]}',
+                              history.createdAt
+                                  .toDate()
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')[1]
+                                  .split('.')[0],
                               style: whiteTextStyle)), // Time
                           DataCell(GestureDetector(
                               onTap: () {
@@ -248,8 +258,8 @@ class _HistoryPageState extends State<HistoryPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           headerGreen(),
-          monitoringGudang(AppConstant.deviceID),
-          deteksiKentang(AppConstant.deviceID)
+          monitoringGudang(AppConstant.chooseDevice),
+          deteksiKentang(AppConstant.chooseDevice)
         ],
       ),
     ));

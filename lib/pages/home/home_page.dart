@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/configuration/controllers/person_controller.dart';
+import 'package:potato_apps/model/device_model.dart';
 import 'package:potato_apps/model/user_model.dart';
 import 'package:potato_apps/pages/home/main_page.dart';
 import 'package:potato_apps/pages/setting_page.dart';
@@ -59,23 +60,24 @@ class _HomePageState extends State<HomePage> {
   late List<ChartData> chartData;
 
   late Future<UserModel?> _userFuture;
+  late Future<DeviceModel?> _deviceFuture;
   late Stream<Map<String, dynamic>?> _deviceStream;
   bool? deviceMode;
 
-  Widget deviceInfo() {
+  Widget deviceInfo(String deviceName, String warehouseName) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 24, bottom: 4, right: 22, left: 22),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           DeviceInfoCard(
-              title: "Device 1", assetIcon: 'assets/device.png', widthIcon: 28),
+              title: deviceName, assetIcon: 'assets/device.png', widthIcon: 28),
           SizedBox(
             width: 8,
           ),
           DeviceInfoCard(
-              title: "Gudang 1",
+              title: warehouseName,
               assetIcon: 'assets/warehouse.png',
               widthIcon: 23),
         ],
@@ -354,7 +356,7 @@ class _HomePageState extends State<HomePage> {
             title: 'Save',
             ontap: () async {
               bool addWarehouse = await DeviceController.addNewWarehouseHistory(
-                  '1730184375',
+                  AppConstant.chooseDevice,
                   valueHumidity.toInt(),
                   _lightIntensity,
                   int.parse(_temperature));
@@ -410,6 +412,7 @@ class _HomePageState extends State<HomePage> {
     print(blowervalue);
     blowerIndicator = blowervalue ? "ON" : "OFF";
 
+    _deviceFuture = DeviceController.getDeviceData(AppConstant.chooseDevice);
     _userFuture = getUserInfo(); // Memoize the future
     _deviceStream = DeviceController.streamDeviceData(
         AppConstant.chooseDevice); // Memoize the stream
@@ -449,7 +452,25 @@ class _HomePageState extends State<HomePage> {
                   return const Center(child: Text("No data available"));
                 }
               }),
-          deviceInfo(),
+
+          FutureBuilder(
+              future: _deviceFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                } else if (snapshot.hasData && snapshot.data != null) {
+                  String deviceName = snapshot.data!.deviceName;
+                  String warehouseName = snapshot.data!.warehouse;
+
+                  return deviceInfo(deviceName, warehouseName);
+                } else {
+                  print(snapshot.data?.deviceName ?? 'zero data');
+                  return const Center(child: Text("No data available"));
+                }
+              }),
+          // deviceInfo(),
           panelControl(),
           // StreamBuilder for device data
           StreamBuilder<Map<String, dynamic>?>(
