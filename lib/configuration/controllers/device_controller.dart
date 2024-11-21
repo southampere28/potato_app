@@ -162,14 +162,31 @@ class DeviceController {
 
   // Function to retrieve warehouse history for a specific device
   static Future<List<WarehouseHistory>> getWarehouseHistory(
-      String deviceId) async {
+      String deviceId, DateTime? startDate, DateTime? endDate) async {
     try {
-      QuerySnapshot querySnapshot = await _firestore
+      var query = _firestore
           .collection('device')
           .doc(deviceId)
           .collection('warehouse_history')
-          .orderBy('created_at', descending: true)
-          .get();
+          .orderBy('created_at', descending: true);
+
+      // Apply filtering based on start and end dates
+      if (startDate != null) {
+        query = query.where('created_at', isGreaterThanOrEqualTo: startDate);
+      }
+      if (endDate != null) {
+        final endDateWithTime = DateTime(
+          endDate.year,
+          endDate.month,
+          endDate.day,
+          23,
+          59,
+          59,
+        );
+        query = query.where('created_at', isLessThanOrEqualTo: endDateWithTime);
+      }
+
+      QuerySnapshot querySnapshot = await query.get();
       return querySnapshot.docs
           .map((doc) =>
               WarehouseHistory.fromMap(doc.data() as Map<String, dynamic>))
@@ -351,14 +368,33 @@ class DeviceController {
   }
 
   // Function to retrieve warehouse history for a specific device
-  static Future<List<DetectHistory>> getDetectHistory(String deviceId) async {
+  static Future<List<DetectHistory>> getDetectHistory(
+      String deviceId, DateTime? startDate, DateTime? endDate) async {
     try {
-      QuerySnapshot querySnapshot = await _firestore
+      var query = _firestore
           .collection('device')
           .doc(deviceId)
           .collection('detect_history')
-          .orderBy('created_at', descending: true)
-          .get();
+          .orderBy('created_at', descending: true);
+
+      // Apply filtering based on start and end dates
+      if (startDate != null) {
+        query = query.where('created_at', isGreaterThanOrEqualTo: startDate);
+      }
+      if (endDate != null) {
+        final endDateWithTime = DateTime(
+          endDate.year,
+          endDate.month,
+          endDate.day,
+          23,
+          59,
+          59,
+        );
+        query = query.where('created_at', isLessThanOrEqualTo: endDateWithTime);
+      }
+
+      QuerySnapshot querySnapshot = await query.get();
+
       return querySnapshot.docs
           .map((doc) =>
               DetectHistory.fromMap(doc.data() as Map<String, dynamic>))
