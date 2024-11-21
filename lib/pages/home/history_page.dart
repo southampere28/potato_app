@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/model/device_model.dart';
@@ -29,7 +30,92 @@ AppBar headerGreen() {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  Widget monitoringGudang(String deviceId) {
+  late Future<List<WarehouseHistory>>? _historyWarehouse;
+  late Future<List<DetectHistory>>? _historyDetect;
+
+  // variable for save date information for filter
+  late DateTime? selectedStartDate;
+  late DateTime? selectedEndDate;
+
+  Widget selectDateFiltering() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          SizedBox(
+            height: 30,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
+                  backgroundColor: primaryColor),
+              onPressed: () async {
+                final DateTime? dateTimeStart = await showDatePicker(
+                    context: context,
+                    initialDate: selectedStartDate ?? DateTime.now(),
+                    firstDate: DateTime(2024),
+                    lastDate: DateTime.now());
+
+                if (dateTimeStart != null) {
+                  setState(() {
+                    selectedStartDate = dateTimeStart;
+                  });
+                }
+
+                Fluttertoast.showToast(msg: selectedStartDate.toString());
+              },
+              child: Text(
+                selectedStartDate != null
+                    ? DateFormat('dd/MM/yyyy').format(selectedStartDate!)
+                    : "set date",
+                style: whiteTextStyle.copyWith(fontSize: 14, fontWeight: bold),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final DateTime? dateTimeEnd = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2024),
+                  lastDate: DateTime.now());
+
+              if (dateTimeEnd != null) {
+                setState(() {
+                  selectedEndDate = dateTimeEnd;
+                });
+              }
+
+              Fluttertoast.showToast(msg: selectedEndDate.toString());
+            },
+            child: Text(selectedEndDate != null
+                ? DateFormat('dd/MM/yyyy').format(selectedEndDate!)
+                : "set date"),
+          ),
+          TextButton(
+              onPressed: () {
+                setState(() {
+                  // Trigger the filtering logic
+                  _historyWarehouse = DeviceController.getWarehouseHistory(
+                    AppConstant.chooseDevice,
+                    selectedStartDate,
+                    selectedEndDate,
+                  );
+
+                  _historyDetect = DeviceController.getDetectHistory(
+                      AppConstant.chooseDevice,
+                      selectedStartDate,
+                      selectedEndDate);
+                });
+              },
+              child: Text('sett'))
+        ],
+      ),
+    );
+  }
+
+  Widget monitoringGudang() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -49,7 +135,7 @@ class _HistoryPageState extends State<HistoryPage> {
             color: primaryColor,
           ),
           child: FutureBuilder<List<WarehouseHistory>>(
-            future: DeviceController.getWarehouseHistory(deviceId),
+            future: _historyWarehouse,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
@@ -92,7 +178,7 @@ class _HistoryPageState extends State<HistoryPage> {
                         DataCell(Text('${history.lightIntensity} lx',
                             style: whiteTextStyle)),
                         DataCell(Text(
-                            '${history.createdAt.toDate().toLocal().toString().split(' ')[0]}',
+                            '${DateFormat('dd/MM/yyyy').format(history.createdAt.toDate().toLocal())}',
                             style: whiteTextStyle)), // Date
                         DataCell(Text(
                             '${history.createdAt.toDate().toLocal().toString().split(' ')[1].split('.')[0]}',
@@ -109,7 +195,7 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget deteksiKentang(String deviceId) {
+  Widget deteksiKentang() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -129,7 +215,7 @@ class _HistoryPageState extends State<HistoryPage> {
             color: primaryColor,
           ),
           child: FutureBuilder<List<DetectHistory>>(
-              future: DeviceController.getDetectHistory(deviceId),
+              future: _historyDetect,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -172,11 +258,8 @@ class _HistoryPageState extends State<HistoryPage> {
                           DataCell(Text(history.resultDetect,
                               style: whiteTextStyle)),
                           DataCell(Text(
-                              history.createdAt
-                                  .toDate()
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')[0],
+                              DateFormat('dd/MM/yyyy')
+                                  .format(history.createdAt.toDate().toLocal()),
                               style: whiteTextStyle)), // Date
                           DataCell(Text(
                               history.createdAt
@@ -249,6 +332,20 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
+  void initState() {
+    super.initState();
+
+    String deviceId = AppConstant.chooseDevice;
+
+    selectedStartDate = null;
+    selectedEndDate = DateTime.now();
+
+    _historyWarehouse =
+        DeviceController.getWarehouseHistory(deviceId, null, null);
+
+    _historyDetect = DeviceController.getDetectHistory(deviceId, null, null);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -258,8 +355,9 @@ class _HistoryPageState extends State<HistoryPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           headerGreen(),
-          monitoringGudang(AppConstant.chooseDevice),
-          deteksiKentang(AppConstant.chooseDevice)
+          selectDateFiltering(),
+          monitoringGudang(),
+          deteksiKentang()
         ],
       ),
     ));
