@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +8,7 @@ import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/model/device_model.dart';
 import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/button_green.dart';
+import 'package:potato_apps/widget/field_filter.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -37,79 +40,137 @@ class _HistoryPageState extends State<HistoryPage> {
   late DateTime? selectedStartDate;
   late DateTime? selectedEndDate;
 
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _endDateController = TextEditingController();
+
   Widget selectDateFiltering() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+      margin: const EdgeInsets.only(right: 16, left: 16, top: 30),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+          border: Border.all(color: Colors.black, width: 1)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 30,
-            child: TextButton(
-              style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
-                  backgroundColor: primaryColor),
-              onPressed: () async {
-                final DateTime? dateTimeStart = await showDatePicker(
-                    context: context,
-                    initialDate: selectedStartDate ?? DateTime.now(),
-                    firstDate: DateTime(2024),
-                    lastDate: DateTime.now());
-
-                if (dateTimeStart != null) {
-                  setState(() {
-                    selectedStartDate = dateTimeStart;
-                  });
-                }
-
-                Fluttertoast.showToast(msg: selectedStartDate.toString());
-              },
-              child: Text(
-                selectedStartDate != null
-                    ? DateFormat('dd/MM/yyyy').format(selectedStartDate!)
-                    : "set date",
-                style: whiteTextStyle.copyWith(fontSize: 14, fontWeight: bold),
+          Text(
+            'Search By Date',
+            style: blackTextStyle.copyWith(fontSize: 14, fontWeight: bold),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today,
+                size: 30,
+                color: primaryColor,
               ),
-            ),
+              const SizedBox(
+                width: 8,
+              ),
+              GestureDetector(
+                onTap: () async {
+                  final DateTime? dateTimeStart = await showDatePicker(
+                      context: context,
+                      initialDate: selectedStartDate ?? DateTime.now(),
+                      firstDate: DateTime(2024),
+                      lastDate: DateTime.now());
+
+                  if (dateTimeStart != null) {
+                    setState(() {
+                      selectedStartDate = dateTimeStart;
+                    });
+                  }
+
+                  // Fluttertoast.showToast(msg: selectedStartDate.toString());
+                },
+                child: SizedBox(
+                  height: 40,
+                  width: 88,
+                  child: FieldFilter(
+                      controller: _startDateController,
+                      icon: null,
+                      keyType: TextInputType.text,
+                      labelField: "Start Date",
+                      hintxt: selectedStartDate != null
+                          ? DateFormat('dd/MM/yyyy').format(selectedStartDate!)
+                          : "set date"),
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  '-',
+                  style:
+                      blackTextStyle.copyWith(fontSize: 12, fontWeight: bold),
+                ),
+              ),
+              GestureDetector(
+                onTap: () async {
+                  final DateTime? dateTimeEnd = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2024),
+                      lastDate: DateTime.now());
+
+                  if (dateTimeEnd != null) {
+                    setState(() {
+                      selectedEndDate = dateTimeEnd;
+                    });
+                  }
+
+                  Fluttertoast.showToast(msg: selectedEndDate.toString());
+                },
+                child: SizedBox(
+                  height: 40,
+                  width: 88,
+                  child: FieldFilter(
+                      controller: _endDateController,
+                      icon: null,
+                      keyType: TextInputType.text,
+                      labelField: "End Date",
+                      hintxt: selectedEndDate != null
+                          ? DateFormat('dd/MM/yyyy').format(selectedEndDate!)
+                          : "set date"),
+                ),
+              ),
+              Spacer(),
+              SizedBox(
+                height: 30,
+                child: TextButton(
+                    style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        backgroundColor: primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        )),
+                    onPressed: () {
+                      setState(() {
+                        // Trigger the filtering logic
+                        _historyWarehouse =
+                            DeviceController.getWarehouseHistory(
+                          AppConstant.chooseDevice,
+                          selectedStartDate,
+                          selectedEndDate,
+                        );
+
+                        _historyDetect = DeviceController.getDetectHistory(
+                            AppConstant.chooseDevice,
+                            selectedStartDate,
+                            selectedEndDate);
+                      });
+                    },
+                    child: Text(
+                      'set',
+                      style: whiteTextStyle.copyWith(
+                          fontSize: 14, fontWeight: bold),
+                    )),
+              )
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              final DateTime? dateTimeEnd = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2024),
-                  lastDate: DateTime.now());
-
-              if (dateTimeEnd != null) {
-                setState(() {
-                  selectedEndDate = dateTimeEnd;
-                });
-              }
-
-              Fluttertoast.showToast(msg: selectedEndDate.toString());
-            },
-            child: Text(selectedEndDate != null
-                ? DateFormat('dd/MM/yyyy').format(selectedEndDate!)
-                : "set date"),
-          ),
-          TextButton(
-              onPressed: () {
-                setState(() {
-                  // Trigger the filtering logic
-                  _historyWarehouse = DeviceController.getWarehouseHistory(
-                    AppConstant.chooseDevice,
-                    selectedStartDate,
-                    selectedEndDate,
-                  );
-
-                  _historyDetect = DeviceController.getDetectHistory(
-                      AppConstant.chooseDevice,
-                      selectedStartDate,
-                      selectedEndDate);
-                });
-              },
-              child: Text('sett'))
         ],
       ),
     );
@@ -122,7 +183,7 @@ class _HistoryPageState extends State<HistoryPage> {
         Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
           child: Text(
-            'History Monitoring Gudang',
+            'Warehouse History',
             style: blackTextStyle.copyWith(fontSize: 18, fontWeight: bold),
           ),
         ),
@@ -202,7 +263,7 @@ class _HistoryPageState extends State<HistoryPage> {
         Padding(
           padding: const EdgeInsets.only(left: 16, right: 16, top: 24),
           child: Text(
-            'History Deteksi Kentang',
+            'History Potato Quality Detection',
             style: blackTextStyle.copyWith(fontSize: 18, fontWeight: bold),
           ),
         ),
