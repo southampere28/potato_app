@@ -24,7 +24,7 @@ class DeviceModel {
       deviceName: data['device_name'] ?? '',
       warehouse: data['warehouse'] ?? '',
       warehouseHistory: (data['warehouse_history'] as List<dynamic>? ?? [])
-          .map((item) => WarehouseHistory.fromMap(item as Map<String, dynamic>))
+          .map((item) => WarehouseHistory.fromMap(item.doc.id??'', item as Map<String, dynamic>))
           .toList(),
       detectHistory: (data['detect_history'] as List<dynamic>? ?? [])
           .map((item) => DetectHistory.fromMap(item as Map<String, dynamic>))
@@ -45,12 +45,14 @@ class DeviceModel {
 }
 
 class WarehouseHistory {
+  final String docId;
   final Timestamp createdAt;
   final int humidity;
   final int temperature;
   final int lightIntensity;
 
   WarehouseHistory({
+    required this.docId,
     required this.createdAt,
     required this.humidity,
     required this.temperature,
@@ -58,8 +60,9 @@ class WarehouseHistory {
   });
 
   // Factory constructor to create WarehouseHistory from a map
-  factory WarehouseHistory.fromMap(Map<String, dynamic> data) {
+  factory WarehouseHistory.fromMap(String docId, Map<String, dynamic> data) {
     return WarehouseHistory(
+      docId: docId,
       createdAt: data['created_at'] ?? Timestamp.now(),
       humidity: (data['humidity'] ?? 0),
       temperature: (data['temperature'] ?? 0),

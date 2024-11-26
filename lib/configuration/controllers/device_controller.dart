@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -188,11 +189,11 @@ class DeviceController {
 
       QuerySnapshot querySnapshot = await query.get();
       return querySnapshot.docs
-          .map((doc) =>
-              WarehouseHistory.fromMap(doc.data() as Map<String, dynamic>))
+          .map((doc) => WarehouseHistory.fromMap(
+              doc.id, doc.data() as Map<String, dynamic>))
           .toList();
-    } catch (e) {
-      print('Error retrieving warehouse history: $e');
+    } catch (e, s) {
+      print('Error retrieving warehouse history: $e, $s');
       return [];
     }
   }

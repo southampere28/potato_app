@@ -401,10 +401,13 @@ class _HistoryPageState extends State<HistoryPage> {
     selectedStartDate = null;
     selectedEndDate = DateTime.now();
 
-    _historyWarehouse =
-        DeviceController.getWarehouseHistory(deviceId, null, null);
+    final now = DateTime.now();
+    final lastWeek = now.subtract(Duration(days: 7));
 
-    _historyDetect = DeviceController.getDetectHistory(deviceId, null, null);
+    _historyWarehouse =
+        DeviceController.getWarehouseHistory(deviceId, lastWeek, now);
+
+    _historyDetect = DeviceController.getDetectHistory(deviceId, lastWeek, now);
   }
 
   @override
