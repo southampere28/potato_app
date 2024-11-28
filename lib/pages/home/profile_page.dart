@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/configuration/controllers/person_controller.dart';
 import 'package:potato_apps/model/user_model.dart';
 import 'package:potato_apps/widget/button_green.dart';
@@ -56,8 +57,20 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         _imageFile = imageTemporary;
       });
+
+      updateProfileImage(imageTemporary);
     } on PlatformException catch (e) {
       Fluttertoast.showToast(msg: 'failed pick image $e');
+    }
+  }
+
+  Future<void> updateProfileImage(File imageFile) async {
+    var result = await PersonController.updateProfilePhoto(imageFile);
+
+    if (result) {
+      Fluttertoast.showToast(msg: "Update Profile Photo Success");
+    } else {
+      Fluttertoast.showToast(msg: "Failed update profile photo");
     }
   }
 
