@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:potato_apps/configuration/controllers/device_controller.dart';
 import 'package:potato_apps/configuration/controllers/person_controller.dart';
 import 'package:potato_apps/model/user_model.dart';
+import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/button_green.dart';
 import 'package:potato_apps/widget/button_logout.dart';
 import 'package:potato_apps/widget/formfield_profile.dart';
@@ -47,6 +48,9 @@ class _ProfilePageState extends State<ProfilePage> {
   // fileImage
   File? _imageFile;
 
+  // loading updateimage
+  bool isLoading = false;
+
   Future<void> _pickImage() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -64,19 +68,91 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> confirmLogout(BuildContext context) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Logout'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure to logout?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Navigator.of(context).pop();
+                PersonController.signOutUser(context);
+              },
+              child: Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Fungsi untuk menampilkan dialog loading
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // loading indicator
+                const CircularProgressIndicator(),
+                // Title of the dialog
+                const SizedBox(height: 20,),
+                Text(
+                  'Please Wait...',
+                  style:
+                      blackTextStyle.copyWith(fontSize: 12, fontWeight: bold),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Fungsi untuk update profile image
   Future<void> updateProfileImage(File imageFile) async {
+    // Tampilkan loading dialog
+    showLoadingDialog(context);
+
+    // Proses update foto profil
     var result = await PersonController.updateProfilePhoto(imageFile);
+
+    // Tutup dialog loading
+    Navigator.of(context).pop();
 
     if (result) {
       Fluttertoast.showToast(msg: "Update Profile Photo Success");
     } else {
-      Fluttertoast.showToast(msg: "Failed update profile photo");
+      Fluttertoast.showToast(msg: "Failed to update profile photo");
     }
   }
-
-  // Stream<UserModel?> getUserInfo() {
-  //   return PersonController.getUserDataStream();
-  // }
 
   Future<UserModel?> getUserInfo() {
     return PersonController.getUserData();
@@ -196,7 +272,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ButtonLogout(
                     title: 'Logout',
                     ontap: () {
-                      PersonController.signOutUser(context);
+                      confirmLogout(context);
                     }),
                 ButtonGreen(
                     title: 'Save',
@@ -224,14 +300,6 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
-  }
-
-  Widget signOutButton() {
-    return TextButton(
-        onPressed: () {
-          PersonController.signOutUser(context);
-        },
-        child: Text('Logout Cuy'));
   }
 
   @override
