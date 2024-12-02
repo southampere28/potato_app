@@ -212,40 +212,43 @@ class _HistoryPageState extends State<HistoryPage> {
 
               // Display the fetched warehouse history
               final historyList = snapshot.data!;
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  headingRowColor:
-                      MaterialStateColor.resolveWith((states) => primaryColor),
-                  columnSpacing: 20,
-                  columns: [
-                    DataColumn(label: Text('No', style: whiteTextStyle)),
-                    DataColumn(label: Text('Temp', style: whiteTextStyle)),
-                    DataColumn(label: Text('Humid', style: whiteTextStyle)),
-                    DataColumn(label: Text('Lux', style: whiteTextStyle)),
-                    DataColumn(label: Text('Date', style: whiteTextStyle)),
-                    DataColumn(label: Text('Time', style: whiteTextStyle)),
-                  ],
-                  rows: List<DataRow>.generate(
-                    historyList.length,
-                    (index) {
-                      final history = historyList[index];
-                      return DataRow(cells: [
-                        DataCell(Text('${index + 1}', style: whiteTextStyle)),
-                        DataCell(Text('${history.temperature}°C',
-                            style: whiteTextStyle)),
-                        DataCell(Text('${history.humidity}%',
-                            style: whiteTextStyle)),
-                        DataCell(Text('${history.lightIntensity} lx',
-                            style: whiteTextStyle)),
-                        DataCell(Text(
-                            '${DateFormat('dd/MM/yyyy').format(history.createdAt.toDate().toLocal())}',
-                            style: whiteTextStyle)), // Date
-                        DataCell(Text(
-                            '${history.createdAt.toDate().toLocal().toString().split(' ')[1].split('.')[0]}',
-                            style: whiteTextStyle)), // Time
-                      ]);
-                    },
+              return Scrollbar(
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    headingRowColor: MaterialStateColor.resolveWith(
+                        (states) => primaryColor),
+                    columnSpacing: 20,
+                    columns: [
+                      DataColumn(label: Text('No', style: whiteTextStyle)),
+                      DataColumn(label: Text('Temp', style: whiteTextStyle)),
+                      DataColumn(label: Text('Humid', style: whiteTextStyle)),
+                      DataColumn(label: Text('Lux', style: whiteTextStyle)),
+                      DataColumn(label: Text('Date', style: whiteTextStyle)),
+                      DataColumn(label: Text('Time', style: whiteTextStyle)),
+                    ],
+                    rows: List<DataRow>.generate(
+                      historyList.length,
+                      (index) {
+                        final history = historyList[index];
+                        return DataRow(cells: [
+                          DataCell(Text('${index + 1}', style: whiteTextStyle)),
+                          DataCell(Text('${history.temperature}°C',
+                              style: whiteTextStyle)),
+                          DataCell(Text('${history.humidity}%',
+                              style: whiteTextStyle)),
+                          DataCell(Text('${history.lightIntensity} lx',
+                              style: whiteTextStyle)),
+                          DataCell(Text(
+                              '${DateFormat('dd/MM/yyyy').format(history.createdAt.toDate().toLocal())}',
+                              style: whiteTextStyle)), // Date
+                          DataCell(Text(
+                              '${history.createdAt.toDate().toLocal().toString().split(' ')[1].split('.')[0]}',
+                              style: whiteTextStyle)), // Time
+                        ]);
+                      },
+                    ),
                   ),
                 ),
               );
@@ -293,97 +296,102 @@ class _HistoryPageState extends State<HistoryPage> {
                 // Display the fetched detect history
                 final historyList = snapshot.data!;
 
-                return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    headingRowColor: MaterialStateColor.resolveWith(
-                        (states) => primaryColor),
-                    columnSpacing: 14,
-                    columns: [
-                      DataColumn(label: Text('No', style: whiteTextStyle)),
-                      DataColumn(label: Text('Hasil', style: whiteTextStyle)),
-                      DataColumn(label: Text('Date', style: whiteTextStyle)),
-                      DataColumn(label: Text('Time', style: whiteTextStyle)),
-                      DataColumn(
-                          label: Text(
-                        'Gambar',
-                        style: whiteTextStyle,
-                      ))
-                    ],
-                    rows: List<DataRow>.generate(
-                      historyList.length,
-                      (index) {
-                        final history = historyList[index];
-                        return DataRow(cells: [
-                          DataCell(Text('${index + 1}', style: whiteTextStyle)),
-                          DataCell(Text(history.resultDetect,
-                              style: whiteTextStyle)),
-                          DataCell(Text(
-                              DateFormat('dd/MM/yyyy')
-                                  .format(history.createdAt.toDate().toLocal()),
-                              style: whiteTextStyle)), // Date
-                          DataCell(Text(
-                              history.createdAt
-                                  .toDate()
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')[1]
-                                  .split('.')[0],
-                              style: whiteTextStyle)), // Time
-                          DataCell(GestureDetector(
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: Text('Image Preview'),
-                                    content: Image.network(
-                                      history
-                                          .imageDetect, // Replace with your image URL or path
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (BuildContext context,
-                                          Object error,
-                                          StackTrace? stackTrace) {
-                                        return Container(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.1,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  "Cannot load image/image not found",
-                                                  style:
-                                                      alertTextStyle.copyWith(
-                                                          fontSize: 16,
-                                                          fontWeight: bold),
-                                                  textAlign: TextAlign.center,
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                return Scrollbar(
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      headingRowColor: MaterialStateColor.resolveWith(
+                          (states) => primaryColor),
+                      columnSpacing: 14,
+                      columns: [
+                        DataColumn(label: Text('No', style: whiteTextStyle)),
+                        DataColumn(label: Text('Hasil', style: whiteTextStyle)),
+                        DataColumn(label: Text('Date', style: whiteTextStyle)),
+                        DataColumn(label: Text('Time', style: whiteTextStyle)),
+                        DataColumn(
+                            label: Text(
+                          'Gambar',
+                          style: whiteTextStyle,
+                        ))
+                      ],
+                      rows: List<DataRow>.generate(
+                        historyList.length,
+                        (index) {
+                          final history = historyList[index];
+                          return DataRow(cells: [
+                            DataCell(
+                                Text('${index + 1}', style: whiteTextStyle)),
+                            DataCell(Text(history.resultDetect,
+                                style: whiteTextStyle)),
+                            DataCell(Text(
+                                DateFormat('dd/MM/yyyy').format(
+                                    history.createdAt.toDate().toLocal()),
+                                style: whiteTextStyle)), // Date
+                            DataCell(Text(
+                                history.createdAt
+                                    .toDate()
+                                    .toLocal()
+                                    .toString()
+                                    .split(' ')[1]
+                                    .split('.')[0],
+                                style: whiteTextStyle)), // Time
+                            DataCell(GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text('Image Preview'),
+                                      content: Image.network(
+                                        history
+                                            .imageDetect, // Replace with your image URL or path
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (BuildContext context,
+                                            Object error,
+                                            StackTrace? stackTrace) {
+                                          return Container(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.1,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    "Cannot load image/image not found",
+                                                    style:
+                                                        alertTextStyle.copyWith(
+                                                            fontSize: 16,
+                                                            fontWeight: bold),
+                                                    textAlign: TextAlign.center,
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
+                                              ],
+                                            ),
+                                          );
                                         },
-                                        child: Text('Close'),
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              child: Text('Lihat', style: subtitleTextStyle))),
-                        ]);
-                      },
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text('Close'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child:
+                                    Text('Lihat', style: subtitleTextStyle))),
+                          ]);
+                        },
+                      ),
                     ),
                   ),
                 );
