@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/pages/home/main_page.dart';
+import 'package:potato_apps/pages/setting_page.dart';
 import 'package:potato_apps/pages/sign_in_page.dart';
 import 'package:potato_apps/pages/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,13 +9,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:potato_apps/firebase_options.dart';
 import 'dart:developer';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
-  runApp(const MyApp());
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  runApp(const MyApp());
+  cleanTemporaryDirectory();
+  _requestPermission();
   // await signInAnonymously();
   // await getDataFromFirestore();
 }
@@ -28,20 +35,48 @@ Future<void> signInAnonymously() async {
   }
 }
 
-Future<void> getDataFromFirestore() async {
-  try {
-    // Access Firestore collection 'yourCollection'
-    CollectionReference collectionRef =
-        FirebaseFirestore.instance.collection('cafe');
-    QuerySnapshot snapshot = await collectionRef.get();
+FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+// Request Permission to show notifications (for iOS)
+Future<void> _requestPermission() async {
+  NotificationSettings settings = await _firebaseMessaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
 
-    // Log each document's data
-    for (var doc in snapshot.docs) {
-      print(doc.id);
-      print(doc.data()); // Logs to terminal
+  print('Permission granted: ${settings.authorizationStatus}');
+
+  // If permission is granted, get the device token
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    _getDeviceToken();
+  } else {
+    print("Permission not granted");
+  }
+}
+
+// Get the Firebase device token
+Future<void> _getDeviceToken() async {
+  String? token = await _firebaseMessaging.getToken();
+  if (token != null) {
+    print("Device Token: $token"); // Print the device
+    AppConstant.deviceToken = token;
+  } else {
+    print("Failed to get the device token.");
+  }
+}
+
+Future<void> cleanTemporaryDirectory() async {
+  try {
+    final tempDir = await getTemporaryDirectory();
+    final files = tempDir.listSync();
+    for (var file in files) {
+      if (file is File) {
+        await file.delete();
+      }
     }
+    print("Temporary directory cleaned.");
   } catch (e) {
-    log('Error fetching data: $e');
+    print("Error cleaning temporary directory: $e");
   }
 }
 
@@ -55,6 +90,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const SplashScreen(),
         '/sign-in': (context) => const SignInPage(),
         '/home': (context) => const MainPage(),
+        '/settings': (context) => const SettingsPage(),
       },
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/configuration/controllers/person_controller.dart';
 import 'package:potato_apps/theme.dart';
 import 'package:potato_apps/widget/login_button.dart';
@@ -83,6 +84,14 @@ class _SignInPageState extends State<SignInPage> {
                   routeFunction: () async {
                     // Fluttertoast.showToast(msg: 'Login Mahasiswa Clicked');
                     await PersonController.googleAuthLogin(context);
+
+                    bool success = await PersonController.updateDeviceToken(
+                        AppConstant.deviceToken);
+                    if (success) {
+                      print('Device token updated successfully');
+                    } else {
+                      print('Failed to update device token');
+                    }
                   }),
               const SizedBox(
                 height: 50,
