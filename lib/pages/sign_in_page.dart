@@ -19,6 +19,40 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
+
+    void showLoginSuccessDialog(BuildContext context) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 50),
+                SizedBox(height: 10),
+                Text(
+                  'Login Successful!',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: Text('You have successfully logged in.'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: primaryColor,
@@ -83,7 +117,10 @@ class _SignInPageState extends State<SignInPage> {
                   buttonName: 'Login With Google',
                   routeFunction: () async {
                     // Fluttertoast.showToast(msg: 'Login Mahasiswa Clicked');
+
                     await PersonController.googleAuthLogin(context);
+
+                    showLoginSuccessDialog(context);
 
                     bool success = await PersonController.updateDeviceToken(
                         AppConstant.deviceToken);
