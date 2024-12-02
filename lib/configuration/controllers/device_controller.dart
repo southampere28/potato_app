@@ -213,7 +213,7 @@ class DeviceController {
           .add(await http.MultipartFile.fromPath('image_file', imageFile.path));
 
       // Send the request
-      var response = await request.send();
+      var response = await request.send().timeout(const Duration(seconds: 30));
 
       // Handle response
       if (response.statusCode == 200) {
@@ -234,7 +234,7 @@ class DeviceController {
     try {
       final response = await http
           .get(Uri.parse(AppConstant.espCamURL))
-          .timeout(const Duration(seconds: 10)); // Adjust the timeout here
+          .timeout(const Duration(seconds: 30)); // Adjust the timeout here
 
       if (response.statusCode == 200) {
         print("Gambar berhasil diambil dari ESP32-CAM.");
