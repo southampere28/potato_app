@@ -155,6 +155,42 @@ class _DetectionPageState extends State<DetectionPage> {
         });
   }
 
+  // Fungsi untuk menampilkan dialog loading
+  void showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+                color: Colors.white, borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // loading indicator
+                const CircularProgressIndicator(),
+                // Title of the dialog
+                const SizedBox(
+                  height: 20,
+                ),
+                Text(
+                  'Please Wait...',
+                  style:
+                      blackTextStyle.copyWith(fontSize: 12, fontWeight: bold),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _pickImage() async {
     try {
       final image = await ImagePicker().pickImage(
@@ -175,6 +211,7 @@ class _DetectionPageState extends State<DetectionPage> {
 
   Future<void> _takePhotoEsp() async {
     Fluttertoast.showToast(msg: 'Taking picture from espcam');
+    showLoadingDialog(context);
     final result = await DeviceController.captureImage();
     if (result != null) {
       setState(() {
@@ -184,6 +221,7 @@ class _DetectionPageState extends State<DetectionPage> {
     } else {
       Fluttertoast.showToast(msg: 'Error, gagal menangkap gambar');
     }
+    Navigator.of(context).pop();
   }
 
   Widget switchButton() {
@@ -372,6 +410,7 @@ class _DetectionPageState extends State<DetectionPage> {
       ontap: () async {
         if (_imageFile != null) {
           Fluttertoast.showToast(msg: 'Analyzing image...');
+          showLoadingDialog(context);
 
           // Call the API to send the image and get the result
           final result =
@@ -391,6 +430,7 @@ class _DetectionPageState extends State<DetectionPage> {
         } else {
           Fluttertoast.showToast(msg: 'No image selected');
         }
+        Navigator.of(context).pop();
       },
     );
   }
@@ -401,10 +441,14 @@ class _DetectionPageState extends State<DetectionPage> {
         ontap: () async {
           Fluttertoast.showToast(msg: 'Saving...');
 
+          showLoadingDialog(context);
+
           var result = await DeviceController.saveDetectionWithImage(
               AppConstant.chooseDevice,
               resultDetect ?? '(Undetected)',
               _imageFile);
+
+          Navigator.of(context).pop();
 
           if (result) {
             // Fluttertoast.showToast(msg: 'Success save History');
