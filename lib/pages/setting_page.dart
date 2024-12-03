@@ -17,8 +17,8 @@ class SettingsPage extends StatefulWidget {
 
 String? valueDevice;
 final List<String> _dropdownItemsDevice = [
-  "Device 1 Gudang 1",
-  "Device 2 Gudang 2",
+  "Device 1",
+  "Device 2",
 ];
 
 AppBar headerGreen(BuildContext context) {
