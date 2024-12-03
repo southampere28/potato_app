@@ -350,7 +350,7 @@ class DeviceController {
       }
 
       // Upload the image and get the download URL
-      String? imageUrl = await uploadImage(imgFile, deviceId);
+      String? imageUrl = await uploadImage(imgFile, deviceId).timeout(const Duration(seconds: 30));
       if (imageUrl == null) {
         print("Failed to get image URL.");
         return false;
