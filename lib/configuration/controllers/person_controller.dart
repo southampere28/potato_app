@@ -304,4 +304,30 @@ class PersonController {
       return false; // Indicating failure
     }
   }
+
+  // add new device token and renewal device token
+  static Future<bool> updateDeviceToken(
+      String deviceToken) async {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    String uid = currentUser?.uid ?? '';
+
+    try {
+      // Reference to the user's document
+      DocumentReference userDoc =
+          FirebaseFirestore.instance.collection('users').doc(uid);
+
+      // Update or set the deviceToken field
+      await userDoc.update({'deviceToken': deviceToken}).catchError((e) async {
+        // If the update fails, we use `set` to create the field if it doesn't exist
+        await userDoc
+            .set({'deviceToken': deviceToken}, SetOptions(merge: true));
+      });
+
+      print('Device token updated successfully.');
+      return true; // Indicating success
+    } catch (e) {
+      print('Error updating device token: $e');
+      return false; // Indicating failure
+    }
+  }
 }
