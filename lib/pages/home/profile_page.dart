@@ -230,6 +230,7 @@ class _ProfilePageState extends State<ProfilePage> {
             keyType: TextInputType.name,
             hintxt: "",
             labelField: "Nama",
+            enable: true,
           ),
           const SizedBox(
             height: 16,
@@ -240,6 +241,7 @@ class _ProfilePageState extends State<ProfilePage> {
             keyType: TextInputType.emailAddress,
             hintxt: "",
             labelField: "Email",
+            enable: false
           ),
           const SizedBox(
             height: 16,
@@ -250,6 +252,7 @@ class _ProfilePageState extends State<ProfilePage> {
             keyType: TextInputType.text,
             hintxt: "(kota asal belum diatur)",
             labelField: "Kota Asal",
+            enable: true,
           ),
           const SizedBox(
             height: 16,
@@ -260,6 +263,7 @@ class _ProfilePageState extends State<ProfilePage> {
             keyType: TextInputType.text,
             hintxt: "(pekerjaan belum diatur)",
             labelField: "Pekerjaan",
+            enable: true
           ),
           const SizedBox(
             height: 16,

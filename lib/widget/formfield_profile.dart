@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:potato_apps/theme.dart';
 
 class FormFieldProfile extends StatelessWidget {
@@ -8,13 +9,15 @@ class FormFieldProfile extends StatelessWidget {
       required this.icon,
       required this.keyType,
       required this.labelField,
-      required this.hintxt});
+      required this.hintxt,
+      required this.enable});
 
   final TextEditingController controller;
   final icon;
   final TextInputType keyType;
   final String labelField;
   final String hintxt;
+  final bool enable;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +38,9 @@ class FormFieldProfile extends StatelessWidget {
           ],
         ),
         TextFormField(
+          style: GoogleFonts.poppins(
+              color: enable ? Colors.black : Colors.black54),
+          enabled: enable,
           controller: controller, // use the controller to fill the text field
           keyboardType: keyType,
           decoration: InputDecoration(
@@ -47,6 +53,15 @@ class FormFieldProfile extends StatelessWidget {
             ),
             suffixIcon: icon,
             enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color:
+                    primaryColor, // Default color when the field is enabled but not focused
+                style: BorderStyle.solid,
+                width: 1,
+              ),
+            ),
+            disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(
                 color:
