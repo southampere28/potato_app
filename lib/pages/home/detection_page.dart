@@ -210,7 +210,7 @@ class _DetectionPageState extends State<DetectionPage> {
   }
 
   Future<void> _takePhotoEsp() async {
-    Fluttertoast.showToast(msg: 'Taking picture from espcam');
+    Fluttertoast.showToast(msg: 'Taking picture from webcam');
     showLoadingDialog(context);
     final result = await DeviceController.captureImage();
     if (result != null) {
@@ -242,7 +242,7 @@ class _DetectionPageState extends State<DetectionPage> {
           whiteTextStyle.copyWith(fontWeight: bold),
           whiteTextStyle.copyWith(fontWeight: bold)
         ],
-        labels: ['Phone', 'Esp Cam'],
+        labels: ['Phone', 'WebCam'],
         // icons: [FontAwesomeIcons.mars, FontAwesomeIcons.venus],
         activeBgColors: [
           [primaryColor],
@@ -257,237 +257,11 @@ class _DetectionPageState extends State<DetectionPage> {
 
             index == 0
                 ? titleMsg = "Connect Phone Cam"
-                : titleMsg = "Connect EspCam";
+                : titleMsg = "Connect Web Cam";
           });
         },
       ),
     );
-  }
-
-  Widget body() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(
-            height: 16,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              switchButton(),
-            ],
-          ),
-          const SizedBox(
-            height: 16,
-          ),
-          GestureDetector(
-            onTap: () =>
-                selectedIndex == 0 ? showImageResource() : _takePhotoEsp(),
-            child: Container(
-              width: double.infinity,
-              height: 198,
-              decoration: BoxDecoration(
-                  color: fifthColor,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 4,
-                        offset: Offset(2, 6))
-                  ]),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      iconCamera,
-                      width: 82,
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Text(
-                      titleMsg,
-                      style: blackTextStyle.copyWith(
-                          fontSize: 12, fontWeight: semiBold),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Container(
-            padding: const EdgeInsets.all(24),
-            width: double.infinity,
-            decoration: BoxDecoration(
-                color: fifthColor,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(2, 6))
-                ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _imageFile != null
-                        ? GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  title: Text('Image Preview'),
-                                  content: Image(
-                                    image: FileImage(
-                                        _imageFile!), // Replace with your image URL or path
-                                    fit: BoxFit.cover,
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text('Close'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.file(
-                                _imageFile!,
-                                key: ValueKey(DateTime.now().toString()),
-                                height: 140,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          )
-                        : Image.asset(
-                            'assets/image_potato.png',
-                            height: 160,
-                          ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Text(
-                  'Result : ${resultDetect ?? '(None)'}',
-                  style: blackTextStyle.copyWith(
-                      fontSize: 16, fontWeight: semiBold),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              buttonOutlineGreen(),
-              buttonGreen(),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buttonGreen() {
-    return ButtonGreen(
-      title: 'Analyze',
-      ontap: () async {
-        if (_imageFile != null) {
-          Fluttertoast.showToast(msg: 'Analyzing image...');
-          showLoadingDialog(context);
-
-          // Call the API to send the image and get the result
-          final result =
-              await DeviceController.sendImageForAnalysis(_imageFile!);
-
-          if (result != null) {
-            // Show result in a toast message or handle it in any other way
-            setState(() {
-              resultDetect = result['quality'];
-            });
-            Fluttertoast.showToast(
-              msg: 'Analysis Result: ${result['quality']}',
-            );
-          } else {
-            Fluttertoast.showToast(msg: 'Failed to analyze image.');
-          }
-        } else {
-          Fluttertoast.showToast(msg: 'No image selected');
-        }
-        Navigator.of(context).pop();
-      },
-    );
-  }
-
-  Widget buttonOutlineGreen() {
-    return ButtonOutlineGreen(
-        title: 'Save',
-        ontap: () async {
-          Fluttertoast.showToast(msg: 'Saving...');
-
-          showLoadingDialog(context);
-
-          var result = await DeviceController.saveDetectionWithImage(
-              AppConstant.chooseDevice,
-              resultDetect ?? '(Undetected)',
-              _imageFile);
-
-          Navigator.of(context).pop();
-
-          if (result) {
-            // Fluttertoast.showToast(msg: 'Success save History');
-            final snackBar = SnackBar(
-              /// need to set following properties for best effect of awesome_snackbar_content
-              elevation: 0,
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: Colors.transparent,
-              content: AwesomeSnackbarContent(
-                title: 'Success!',
-                message: 'Result detect was saved!',
-
-                /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-                contentType: ContentType.success,
-              ),
-            );
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(snackBar);
-          } else {
-            // Fluttertoast.showToast(msg: 'Failed save History');
-            final snackBar = SnackBar(
-              /// need to set following properties for best effect of awesome_snackbar_content
-              elevation: 0,
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: Colors.transparent,
-              content: AwesomeSnackbarContent(
-                title: 'Failed!',
-                message: 'Error While Saving Result Detection!',
-
-                /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-                contentType: ContentType.failure,
-              ),
-            );
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(snackBar);
-          }
-        });
   }
 
   void initState() {
@@ -500,6 +274,275 @@ class _DetectionPageState extends State<DetectionPage> {
 
   @override
   Widget build(BuildContext context) {
+    Widget buttonGreen() {
+      return ButtonGreen(
+        title: 'Analyze',
+        ontap: () async {
+          if (_imageFile != null) {
+            Fluttertoast.showToast(msg: 'Analyzing image...');
+            showLoadingDialog(context);
+
+            // Call the API to send the image and get the result
+            final result =
+                await DeviceController.sendImageForAnalysis(_imageFile!);
+            Navigator.of(context).pop();
+
+            if (result != null) {
+              // Show result in a toast message or handle it in any other way
+              setState(() {
+                resultDetect = result['quality'];
+              });
+              final snackBar = SnackBar(
+                /// need to set following properties for best effect of awesome_snackbar_content
+                elevation: 0,
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.transparent,
+                content: AwesomeSnackbarContent(
+                  title: 'Success!',
+                  message: 'Analysis Result: ${result['quality']}',
+
+                  /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                  contentType: ContentType.success,
+                ),
+              );
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(snackBar);
+            } else {
+              final snackBar = SnackBar(
+                /// need to set following properties for best effect of awesome_snackbar_content
+                elevation: 0,
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.transparent,
+                content: AwesomeSnackbarContent(
+                  title: 'Failed!',
+                  message: 'Failed to analyze image',
+
+                  /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                  contentType: ContentType.failure,
+                ),
+              );
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(snackBar);
+            }
+          } else {
+            final snackBar = SnackBar(
+              /// need to set following properties for best effect of awesome_snackbar_content
+              elevation: 0,
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.transparent,
+              content: AwesomeSnackbarContent(
+                title: 'Failed!',
+                message: 'No Image Selected',
+
+                /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                contentType: ContentType.warning,
+              ),
+            );
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(snackBar);
+          }
+        },
+      );
+    }
+
+    Widget buttonOutlineGreen() {
+      return ButtonOutlineGreen(
+          title: 'Save',
+          ontap: () async {
+            Fluttertoast.showToast(msg: 'Saving...');
+
+            showLoadingDialog(context);
+
+            var result = await DeviceController.saveDetectionWithImage(
+                AppConstant.chooseDevice,
+                resultDetect ?? '(Undetected)',
+                _imageFile);
+
+            Navigator.of(context).pop();
+
+            if (result) {
+              // Fluttertoast.showToast(msg: 'Success save History');
+              final snackBar = SnackBar(
+                /// need to set following properties for best effect of awesome_snackbar_content
+                elevation: 0,
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.transparent,
+                content: AwesomeSnackbarContent(
+                  title: 'Success!',
+                  message: 'Result detect was saved!',
+
+                  /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                  contentType: ContentType.success,
+                ),
+              );
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(snackBar);
+            } else {
+              // Fluttertoast.showToast(msg: 'Failed save History');
+              final snackBar = SnackBar(
+                /// need to set following properties for best effect of awesome_snackbar_content
+                elevation: 0,
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.transparent,
+                content: AwesomeSnackbarContent(
+                  title: 'Failed!',
+                  message: 'Error While Saving Result Detection!',
+
+                  /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                  contentType: ContentType.failure,
+                ),
+              );
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(snackBar);
+            }
+          });
+    }
+
+    Widget body() {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(
+              height: 16,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                switchButton(),
+              ],
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            GestureDetector(
+              onTap: () =>
+                  selectedIndex == 0 ? showImageResource() : _takePhotoEsp(),
+              child: Container(
+                width: double.infinity,
+                height: 198,
+                decoration: BoxDecoration(
+                    color: fifthColor,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(2, 6))
+                    ]),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        iconCamera,
+                        width: 82,
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        titleMsg,
+                        style: blackTextStyle.copyWith(
+                            fontSize: 12, fontWeight: semiBold),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Container(
+              padding: const EdgeInsets.all(24),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  color: fifthColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(2, 6))
+                  ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _imageFile != null
+                          ? GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: Text('Image Preview'),
+                                    content: Image(
+                                      image: FileImage(
+                                          _imageFile!), // Replace with your image URL or path
+                                      fit: BoxFit.cover,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text('Close'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(
+                                  _imageFile!,
+                                  key: ValueKey(DateTime.now().toString()),
+                                  height: 140,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                          : Image.asset(
+                              'assets/image_potato.png',
+                              height: 160,
+                            ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Text(
+                    'Result : ${resultDetect ?? '(None)'}',
+                    style: blackTextStyle.copyWith(
+                        fontSize: 16, fontWeight: semiBold),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                buttonOutlineGreen(),
+                buttonGreen(),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     return Expanded(
         child: SingleChildScrollView(
       scrollDirection: Axis.vertical,
