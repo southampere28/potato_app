@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:potato_apps/configuration/app_constant.dart';
 import 'package:potato_apps/pages/home/detection_page.dart';
 import 'package:potato_apps/pages/home/history_page.dart';
 import 'package:potato_apps/pages/home/home_page.dart';
@@ -8,6 +9,9 @@ import 'package:potato_apps/theme.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
+
+  // static int numberMain = 12;
+  // static String chooseDevice = AppConstant.deviceID;
 
   @override
   State<MainPage> createState() => _MainPageState();

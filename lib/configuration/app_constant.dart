@@ -8,7 +8,7 @@ class AppConstant {
   static const String deviceCollection = "device";
 
   // Flask API URL
-  static const String flaskURL = "http://192.168.1.5:5000";
+  static const String flaskURL = "http://172.16.115.93:5000";
 
   // ESPCam URL
   static const String espCamURL = '$flaskURL/capture';
