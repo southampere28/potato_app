@@ -4,22 +4,22 @@
 
 Potato Base is an AI and IoT-powered system designed to detect potato defects and monitor storage conditions. This application utilizes computer vision and machine learning to determine whether a potato is defective or not based on color and texture feature extraction. Additionally, it integrates IoT sensors to track temperature, humidity, and luminance in storage facilities, ensuring optimal preservation conditions. By combining AI-driven image processing with real-time environmental monitoring, Potato Base enhances efficiency in agricultural storage and quality control, providing a smart solution for farmers and food industries.
 
-![Logo](assets\icon\icon.png)
+![Logo](assets/icon/icon.png)
 
 
 ## Screenshots
 
 HomePage             |  Device Setting
 :-------------------------:|:-------------------------:
-![](assets\content_readme\1_home.jpeg)  |  ![](assets\content_readme\2_choosedevice.jpeg)
+![](assets/content_readme/1_home.jpeg)  |  ![](assets/content_readme/2_choosedevice.jpeg)
 
 Detect Page (1)             |  Detect Page (2)
 :-------------------------:|:-------------------------:
-![](assets\content_readme\3_1detect.jpeg)  |  ![](assets\content_readme\3_2detect.jpeg)
+![](assets/content_readme/3_1detect.jpeg)  |  ![](assets/content_readme/3_2detect.jpeg)
 
 History             |  Profile
 :-------------------------:|:-------------------------:
-![](assets\content_readme\4_history.jpeg)  |  ![](assets\content_readme\5_showprofile.jpeg)
+![](assets/content_readme/4_history.jpeg)  |  ![](assets/content_readme/5_showprofile.jpeg)
 
 ## Tech Stack 🛠️
 
