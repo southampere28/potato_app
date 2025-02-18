@@ -71,12 +71,11 @@ History             |  Profile
 
 ## Features
 
-- Content Celebrate contains some image and greeting message with background music
-- Share and Custom Theme Card Content
-- Send text message to sender using external chat app
-- Generate Content text message using gemini API 
-- Create Own Card Content
-
+- Real-time Device Warehouse Conidition Monitoring (Temperature, humidity, Light Intentity).
+- Device Blower Control - Control the Blower for Manual or Auto Using Intuitive Button. 
+- Potato Defect Detection - Detects whether a potato is normal or defective using color and texture analysis.
+- History - Saves previous detection results and Warehouse Condition.
+- Notification - Auto Send Message if warehouse condition is abnormal.
 
 ## Authors
 
